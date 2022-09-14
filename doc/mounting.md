@@ -11,3 +11,6 @@
 | Connect the two motors to the carrier board as follows: left cable at 9, right cable at 10  | <img src="/doc/pictures/image26.jpg" width="150" height="150">  | 
 |  Set the batteries in the holder and together inside near to the motors   |<img src="/doc/pictures/image21.jpg" width="150" height="150">  | 
 | Add the carrier board on top of the battery holder and motors | xxxx | 
+| Fix the proximity sensors ("eyes") in the top part of the robot | xxxx | 
+| Connec the proximity sensor to ??????????? | xxxx | 
+| Close the top part | xxxx | 
