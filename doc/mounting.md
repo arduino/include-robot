@@ -9,6 +9,5 @@
 | Attach the Nano IoT board to the carrier by putting headers in the right place | xxxx | 
 | Add a wire to bring power to the servomotor part of the carrier board (VIN screw = red cable, GND screw = black cable) | xxxx | 
 | Connect the two motors to the carrier board as follows: left cable at 9, right cable at 10  | <img src="/doc/pictures/image26.jpg" width="150" height="150">  | 
-| Connect the battery wires to the carrier board | xxxx | 
-|  Set the batteries in the holder and together inside near to the motor   |<img src="/doc/pictures/image21.jpg" width="150" height="150">  | 
-
+|  Set the batteries in the holder and together inside near to the motors   |<img src="/doc/pictures/image21.jpg" width="150" height="150">  | 
+| Add the carrier board on top of the battery holder and motors | xxxx | 
