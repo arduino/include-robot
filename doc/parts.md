@@ -10,7 +10,8 @@ Case components:
 * Two motors/engines
 
 Eletronics:
-* Arduino Nano 33 IoT Board
+* Main board: Arduino Nano 33 IoT Board
+* Carrier board: DFRobots DFR0012 https://wiki.dfrobot.com/Arduino_Nano_IO_Shield__SKU__DFR0012_
 * Eyes of the robot: proximity sensors
 * Self Tapping Screws
 * Two Batteries (1.5 V each)
