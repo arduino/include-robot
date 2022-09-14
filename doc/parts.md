@@ -9,7 +9,7 @@ Case components:
 | Two wheels | <img src="/doc/pictures/image7.jpg" width="100" height="100"> | 
 | The leg/stand of the robot | <img src="/doc/pictures/image14.jpg" width="100" height="100">   | 
 | The cover/holder of the motor | <img src="/doc/pictures/image4.jpg" width="100" height="100">  | 
-| Roller ball | xxxx |
+| Roller ball diameter 10mm diameter | xxxx |
 
 
 Eletronics:
