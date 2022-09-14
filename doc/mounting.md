@@ -1,12 +1,13 @@
 # Mounting instructions
-
-* Fix the leg of the robot to the bottom part of the case
-* Add the roller ball to help in the moving
-* Set the two motors and fix them
-* Put the motors cover and fix it with the screws 
-* Set out the wheels and fix them with the body of the robot 
-* Connect the two motors to the board as follows
-* The left cable at 8-9
-* The right cable at 10 -11
-*  Set the batteries in the holder and together inside near to the motor 
-*   Combine the board with motor shield 
+| Step | Image |
+| --- | --- |
+| Fix the leg of the robot to the bottom part of the case  | <img src="/doc/pictures/image14.jpg" width="200" height="200">   |
+| Add the roller ball to help in the moving | xxxx | 
+| Set the two motors and fix them  |xxxx | 
+| Put the motors cover and fix it with the screws   |xxxx | 
+| Set out the wheels and fix them with the body of the robot   |xxxx | 
+| Connect the two motors to the board as follows  |xxxx | 
+| The left cable at 8-9  |xxxx | 
+| The right cable at 10 -11  |xxxx | 
+|  Set the batteries in the holder and together inside near to the motor   |xxxx | 
+| Combine the board with motor shield   |xxxx | 
