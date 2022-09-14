@@ -3,10 +3,10 @@
 The robot consists of multiple parts.
 
 Case components:
-* The top and the bottom of the robot
-* Two wheels
-* The leg/stand of the robot
-* The cover/holder of the motor
+| The top and the bottom of the robot |  ![top](/doc/pictures/image16.jpg)
+| Two wheels | 
+| The leg/stand of the robot |
+| The cover/holder of the motor |
 
 
 Eletronics:
