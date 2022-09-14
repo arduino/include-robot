@@ -9,12 +9,13 @@ Case components:
 | Two wheels | <img src="/doc/pictures/image7.jpg" width="100" height="100"> | 
 | The leg/stand of the robot | <img src="/doc/pictures/image14.jpg" width="100" height="100">   | 
 | The cover/holder of the motor | <img src="/doc/pictures/image4.jpg" width="100" height="100">  | 
+| Roller ball | xxxx |
 
 
 Eletronics:
 | Component | Image | 
 | ---      | ---       |
-| Main board: Arduino Nano 33 IoT with headers  https://docs.arduino.cc/hardware/nano-33-iot | <img src="/doc/pictures/image19.jpg" width="100" height="100">   | Carrier board: DFRobots DFR0012 https://wiki.dfrobot.com/Arduino_Nano_IO_Shield__SKU__DFR0012_ |  image missing  | 
+| Main board: Arduino Nano 33 IoT with headers  https://docs.arduino.cc/hardware/nano-33-iot | <img src="/doc/pictures/image19.jpg" width="100" height="100"> |  | Carrier board: DFRobots DFR0012 https://wiki.dfrobot.com/Arduino_Nano_IO_Shield__SKU__DFR0012_ |  image missing  | 
 | Eyes of the robot: proximity sensors | <img src="/doc/pictures/image23.jpg" width="100" height="100">   |
 | Self Tapping Screws | <img src="/doc/pictures/image24.jpg" width="100" height="100">   | 
 | Two motors | <img src="/doc/pictures/image20.jpg" width="100" height="100">   |
