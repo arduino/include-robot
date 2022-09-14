@@ -9,8 +9,8 @@
 | Attach the Nano IoT board to the carrier by putting headers in the right place | <img src="/doc/pictures/image30.jpg" width="150" height="150"> | 
 | Add a wire to bring power to the servomotor part of the carrier board (VIN screw = red cable, GND screw = black cable) | <img src="/doc/pictures/image28.jpg" width="150" height="150"> | 
 | Connect the two motors to the carrier board as follows: left cable at 9, right cable at 10  | <img src="/doc/pictures/image27.jpg" width="150" height="150">  | 
-|  Set the batteries in the holder and together inside near to the motors   |<img src="/doc/pictures/image21.jpg" width="150" height="150">  | 
-| Add the carrier board on top of the battery holder and motors | xxxx | 
+|  Set the batteries in the holder and together inside near to the motors   | <img src="/doc/pictures/image21.jpg" width="150" height="150">  | 
+| Add the carrier board on top of the battery holder and motors | <img src="/doc/pictures/image32.jpg" width="150" height="150"> | 
 | Fix the proximity sensors ("eyes") in the top part of the robot | <img src="/doc/pictures/image12.jpg" width="150" height="150"> | 
 | Connec the proximity sensor to ??????????? | xxxx | 
-| Close the top part | xxxx | 
+| Close the top part | <img src="/doc/pictures/image33.jpg" width="130" height="150"> | 
