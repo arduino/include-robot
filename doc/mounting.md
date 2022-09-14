@@ -7,6 +7,5 @@
 | Put the motors cover and fix it with the screws   | <img src="/doc/pictures/image8.jpg" width="150" height="150"> | 
 | Set out the wheels and fix them with the body of the robot   | <img src="/doc/pictures/image18.jpg" width="150" height="150"> | 
 | Connect the two motors to the carrier board as follows: left cable at 9, right cable at 10  |xxxx | 
-| Attach the Nano IoT board to the carrier by putting headers in the right place | xxxx |
 |  Set the batteries in the holder and together inside near to the motor   |<img src="/doc/pictures/image21.jpg" width="150" height="150">  | 
-| Combine the board with motor shield   |xxxx | 
+| Attach the Nano IoT board to the carrier by putting headers in the right place | xxxx | 
