@@ -1,6 +1,6 @@
 # Mounting instructions
 
-* Fix he leg of the robot 
+* Fix the leg of the robot to the bottom part of the case
 * Add the roller ball to help in the moving
 * Set the two motors and fix them
 * Put the motors cover and fix it with the screws 
