@@ -6,7 +6,7 @@ Case components:
 | Component | Image | 
 | ---      | ---       |
 | The top and the bottom of the robot | <img src="/doc/pictures/image16.jpg" width="110" height="100"> | 
-| Two wheels | <img src="/doc/pictures/image7.jpg" width="110" height="100"> | 
+| Two wheels compatible with Feetech FS90R servos. <br> E.g. https://www.pololu.com/product/4910 | <img src="/doc/pictures/image7.jpg" width="110" height="100"> | 
 | The leg/stand of the robot | <img src="/doc/pictures/image14.jpg" width="110" height="100">   | 
 | The cover/holder of the motor | <img src="/doc/pictures/image4.jpg" width="110" height="100">  | 
 | Roller ball 10mm diameter | <img src="/doc/pictures/image29.jpg" width="110" height="100"> |
