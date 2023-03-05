@@ -1,11 +1,39 @@
-#include <arm_math.h>
+// BLE Scratch v3 / Connect BLE Sense boards to Scratch via Bluetooth
+// 2023.03.04 Added support for BLE Sense R2 and STOPSERVO command
 
+
+// Uncomment one of these defines to select which board you are using
+
+#define ARDUINO_NANO_BLE_SENSE
+//#define ARDUINO_NANO_BLE
+// #define ARDUINO_NANO_BLE_SENSE_R2
+
+// when this is defined the board will print debug messages on serial
+//#define DEBUG
+
+
+
+
+#if defined (ARDUINO_NANO_BLE_SENSE) 
 #include <Arduino_APDS9960.h>
 #include <Arduino_HTS221.h>
 #include <Arduino_LPS22HB.h>
 #include <Arduino_LSM9DS1.h>
+#endif
+
+#if defined (ARDUINO_NANO_BLE_SENSE_R2)
+#include <Arduino_APDS9960.h>
+#include <Arduino_HS300x.h>
+#include <Arduino_LPS22HB.h>
+#include <Arduino_BMI270_BMM150.h>
+#endif
+
+#if defined (ARDUINO_NANO_BLE)
+#include <Arduino_LSM9DS1.h>
+#endif
+
+
 #include <Servo.h>
-#define DEBUG
 #include <ArduinoBLE.h>
 
 #define BLE_SENSE_UUID(val) ("6fbe1da7-" val "-44de-92c4-bb6e04fb0212")
@@ -42,7 +70,8 @@ void setup() {
   Serial.println("Started");
 #endif
 
-  if (!APDS.begin()) {
+#if defined (ARDUINO_NANO_BLE_SENSE) 
+if (!APDS.begin()) {
     printSerialMsg("Failled to initialized APDS!");
     while (1);
   }
@@ -58,7 +87,28 @@ void setup() {
 
     while (1);
   }
+#endif  
 
+#if defined (ARDUINO_NANO_BLE_SENSE_R2)
+ if (!APDS.begin()) {
+    printSerialMsg("Failled to initialized APDS!");
+    while (1);
+  }
+
+  if (!HS300x.begin()) {
+    printSerialMsg("Failled to initialized HTS!");
+    while (1);
+  }
+
+  if (!BARO.begin()) {
+    printSerialMsg("Failled to initialized BARO!");
+    while (1);
+  }
+#endif 
+
+
+
+// All 3 variants have an IMU on it
   if (!IMU.begin()) {
     printSerialMsg("Failled to initialized IMU!");
 
@@ -138,7 +188,12 @@ void loop() {
   }
 }
 
+
+
 void sendFirstPartData() {
+
+
+ #if defined (ARDUINO_NANO_BLE_SENSE) 
   /*
      BARO sensor
   */
@@ -153,6 +208,28 @@ void sendFirstPartData() {
 
   float humidity = HTS.readHumidity();
   delay(delayTime);
+
+#elif defined (ARDUINO_NANO_BLE_SENSE_R2) 
+ /*
+     BARO sensor
+  */
+  float pressure = BARO.readPressure();
+  delay(delayTime);
+
+  /*
+     HTS sensor
+  */
+  float temperature = HS300x.readTemperature();
+  delay(delayTime);
+
+  float humidity = HS300x.readHumidity();
+  delay(delayTime);
+
+#else
+  float pressure = 0;
+  float temperature = 0;
+  float humidity = 0;  
+#endif
 
   /*
      IMU sensor
@@ -203,6 +280,8 @@ void sendFirstPartData() {
 }
 
 void sendSecondPartData() {
+ int gesture = -1;
+#if defined (ARDUINO_NANO_BLE_SENSE) || defined (ARDUINO_NANO_BLE_SENSE_R2) 
   /*
      APDS sensor
   */
@@ -219,12 +298,21 @@ void sendSecondPartData() {
   }
   delay(delayTime);
 
-  int gesture = -1;
+ 
   // check if a proximity reading is available
   if (APDS.gestureAvailable()) {
     gesture = APDS.readGesture();
   }
   delay(delayTime);
+#else
+  red = 0;
+  green = 0;
+  blue = 0;
+  ambientLight = 0;
+  proximity = 0;
+  gesture = 0;
+#endif
+
 
   float data[16] = {
     (float)notificationState,
@@ -262,6 +350,7 @@ enum pinAction {
   ANALOGWRITE = 4,
   SERVOWRITE = 5,
   SERVOWRITE_AND_INITIALIZE = 6,
+  SERVOSTOP
 };
 
 static const int SERVO = 0x4;
@@ -355,6 +444,29 @@ void onPinActionCharacteristicWrite(BLEDevice central, BLECharacteristic charact
         }
       }
       n->s.write(pinValue);
+      break;
+    case SERVOSTOP:
+      // find servo
+      n = root;
+      WrapServo *prev = NULL;
+      while (n != NULL) {
+        if (n->pin == pinNumber) {
+          break;
+        }
+        prev = n;
+        n = n->next;
+      }
+      if (n != NULL) {
+        n->s.detach();
+        pinMode(pinNumber, INPUT);
+
+        if (prev == NULL) {
+          root = n->next;
+        } else {
+          prev->next = n->next;
+        }
+        delete n;
+      }
       break;
   }
   if (response[0] != 0xFF) {
