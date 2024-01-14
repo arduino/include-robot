@@ -4,9 +4,9 @@
 
 // Uncomment one of these defines to select which board you are using
 
-#define ARDUINO_NANO_BLE_SENSE
+//#define ARDUINO_NANO_BLE_SENSE
 //#define ARDUINO_NANO_BLE
-//#define ARDUINO_NANO_BLE_SENSE_R2
+#define ARDUINO_NANO_BLE_SENSE_R2
 
 // when this is defined the board will print debug messages on serial
 //#define DEBUG
@@ -49,6 +49,7 @@ BLEUnsignedIntCharacteristic versionCharacteristic(BLE_SENSE_UUID("1001"), BLERe
 BLECharacteristic sensorsData(BLE_SENSE_UUID("1010"), BLENotify, 16 * sizeof(float));                     // first element it's type and data
 BLECharacteristic rgbLedCharacteristic(BLE_SENSE_UUID("6001"), BLEWrite, 3 * sizeof(byte));               // Array of 3 bytes, RGB
 BLECharacteristic pinActionCharacteristic(BLE_SENSE_UUID("6002"), BLERead | BLEWrite, 4 * sizeof(byte));  // Array of 3 bytes, action + pinNumber + data
+BLECharacteristic              pinRobotCharacteristic           (BLE_SENSE_UUID("6003"), BLERead | BLEWrite, 4 * sizeof(byte)); // Array of 3 bytes, action + data
 
 // String to calculate the local and device name
 String name;
@@ -208,10 +209,12 @@ void setup() {
   service.addCharacteristic(sensorsData);
   service.addCharacteristic(rgbLedCharacteristic);
   service.addCharacteristic(pinActionCharacteristic);
+  service.addCharacteristic(pinRobotCharacteristic);
 
   versionCharacteristic.setValue(VERSION);
   rgbLedCharacteristic.setEventHandler(BLEWritten, onRgbLedCharacteristicWrite);
   pinActionCharacteristic.setEventHandler(BLEWritten, onPinActionCharacteristicWrite);
+  pinRobotCharacteristic.setEventHandler(BLEWritten, onRobotActionCharacteristicWrite);
 
   BLE.addService(service);
 
@@ -411,7 +414,9 @@ enum pinAction {
   ANALOGWRITE = 4,
   SERVOWRITE = 5,
   SERVOWRITE_AND_INITIALIZE = 6,
-  SERVOSTOP
+  SERVOSTOP = 7,
+  // robot action
+  MOVE = 8,
 };
 
 static const int SERVO = 0x4;
@@ -423,6 +428,48 @@ typedef struct WrapServo {
 };
 
 WrapServo *root = NULL;
+
+
+class Robot {
+    Servo rightWheel;
+    Servo leftWheel;
+    /*
+      [0,89] => go forward (from faster to slower)
+      90 => stop
+      [91-180] => go bacward (from lower to faster)
+     */
+    public:
+        Robot(int rightWheelPin, int leftWheelPin) {
+            rightWheel = Servo();
+            leftWheel = Servo();
+            rightWheel.attach(rightWheelPin);
+            leftWheel.attach(leftWheelPin);
+        };
+        void move(int steps){
+         for (int i = 0; i < steps; i++){
+              // TODO: use millis() instead of delay
+              rightWheel.write(80);
+              leftWheel.write(100);
+              delay(1000);
+              rightWheel.write(90);
+              leftWheel.write(90);
+              // TODO: blink led two times
+              delay(500);
+          }
+        };
+        void turnRight(){
+            rightWheel.write(45);
+            leftWheel.write(-135);
+            delay(500);
+            rightWheel.write(0);
+            leftWheel.write(0);
+          delay(500);
+        };
+        void turnLeft();
+        void stop();
+};
+
+Robot myra = Robot(4,3);
 
 void onPinActionCharacteristicWrite(BLEDevice central, BLECharacteristic characteristic) {
   enum pinAction action = (enum pinAction)pinActionCharacteristic[0];
@@ -470,13 +517,13 @@ void onPinActionCharacteristicWrite(BLEDevice central, BLECharacteristic charact
       break;
     case SERVOWRITE:
       // find servo
-      n = root;
-      while (n != NULL) {
-        if (n->pin == pinNumber) {
-          break;
-        }
-        n = n->next;
-      }
+       n = root;
+       while (n != NULL) {
+         if (n->pin == pinNumber) {
+           break;
+         }
+         n = n->next;
+       }
       if (n != NULL) {
         n->s.write(pinValue);
       }
@@ -556,3 +603,22 @@ void setLedPinValue(int pin, int value) {
     analogWrite(pin, 255 - value);
   }
 }
+
+
+
+void onRobotActionCharacteristicWrite(BLEDevice central, BLECharacteristic characteristic) {
+  enum pinAction action = (enum pinAction)pinRobotCharacteristic[0];
+  int8_t steps = pinActionCharacteristic[1];
+
+  Serial.print("ROBOT action=");
+  Serial.println(action);
+  Serial.print("steps = ");
+  Serial.println(steps);
+  switch (action) {
+    case MOVE:
+      Serial.println("go forward");
+      myra.move(1);
+      break;
+  }
+}
+
