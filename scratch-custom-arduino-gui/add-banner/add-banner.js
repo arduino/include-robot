@@ -1,4 +1,5 @@
 const fs = require('fs')
+const path = require('path')
 
 const guiFilename = "./scratch-gui/src/components/gui/gui.jsx"
 
@@ -14,7 +15,7 @@ const linesToReplace = [
 
 ];
 
-fs.cpSync("./scripts/add-banner/dismissable-banner/", "./scratch-gui/src/components/dismissable-banner/", {recursive: true});
+fs.cpSync(path.resolve(__dirname, "./dismissable-banner/"), path.resolve(__dirname, "../../../scratch-gui/src/components/dismissable-banner/"), {recursive: true});
 
 
 linesToReplace.forEach((replacement) => {
