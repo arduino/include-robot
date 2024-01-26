@@ -5,7 +5,7 @@ const ExtIds = ["IncludeRobot", "Scratch3Arduino"];
 const ExtDirName = "scratch3_arduino";
 const ExtDirPath = path.resolve(__dirname, "../scratch-vm/src/extensions/", ExtDirName);
 
-const GuiDir = path.resolve(__dirname,"./scratch-gui");
+const GuiDir = path.resolve("./scratch-gui");
 const VmExtManagerFile = path.resolve(GuiDir, './node_modules/scratch-vm/src/extension-support/extension-manager.js');
 const VmVirtualMachineFile = path.resolve(GuiDir, './node_modules/scratch-vm/src/virtual-machine.js');
 const VmExtArduinoDir = path.resolve(GuiDir, "./node_modules/scratch-vm/src/extensions/", ExtDirName);
