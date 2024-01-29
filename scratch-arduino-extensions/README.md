@@ -28,12 +28,10 @@ npm install
 3. Run the patch/link script
 
 ```
-node ./scripts/patch-gui.js
+node ../scratch-arduino-extensions/scripts/patch-gui.js
 ```
 
 4. Start the scratch gui
 ```
-cd ../scratch-gui
-
 npm start
 ```
