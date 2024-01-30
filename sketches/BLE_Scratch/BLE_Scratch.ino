@@ -4,12 +4,12 @@
 
 // Uncomment one of these defines to select which board you are using
 
-#define ARDUINO_NANO_BLE_SENSE
+//#define ARDUINO_NANO_BLE_SENSE
 //#define ARDUINO_NANO_BLE
-// #define ARDUINO_NANO_BLE_SENSE_R2
+#define ARDUINO_NANO_BLE_SENSE_R2
 
 // when this is defined the board will print debug messages on serial
-//#define DEBUG
+#define DEBUG
 
 
 
@@ -39,6 +39,8 @@
 #define BLE_SENSE_UUID(val) ("6fbe1da7-" val "-44de-92c4-bb6e04fb0212")
 
 const int VERSION = 0x00000000;
+const uint8_t HEADER[] = {0x8a, 0x48, 0x92, 0xdf, 0xaa, 0x69, 0x5c, 0x41};
+const uint8_t MAGIC = 0x7F;
 
 BLEService                     service                       (BLE_SENSE_UUID("0000"));
 BLEUnsignedIntCharacteristic   versionCharacteristic         (BLE_SENSE_UUID("1001"), BLERead);
@@ -56,6 +58,44 @@ int delayTime = 10;
 // Sensor data
 int red = 0, green = 0, blue = 0, ambientLight = 0;
 int proximity = 255;
+
+uint32_t search_in_mem(uint32_t const start, uint32_t const end,
+                       const uint8_t *buff, const int size) {
+  for (int i = 0; i <= end - size; i++) {
+    auto p = start + i;
+    if (memcmp(reinterpret_cast<const void *>(p), buff, size) == 0) {
+      return p;
+    }
+  }
+
+  return 0;
+}
+
+uint32_t get_config_bytes(uint8_t *buff, uint32_t) {
+  for (uint32_t addr = 0; addr < 0x40000;) {
+    auto found = search_in_mem(addr, 0x40000, HEADER, sizeof(HEADER));
+    if (found != 0) {
+#ifdef DEBUG
+      Serial.println("Found header");
+#endif
+      uint8_t magic = *reinterpret_cast<uint8_t *>(found + sizeof(HEADER));
+      if (magic == MAGIC) {
+#ifdef DEBUG
+        Serial.println("Found magic");
+#endif
+
+        uint8_t size = *reinterpret_cast<uint8_t *>(found + sizeof(HEADER) + 1);
+        memcpy(buff, reinterpret_cast<void *>(found + sizeof(HEADER) + 2),
+               size);
+
+        return size;
+      }
+    }
+    addr = found + sizeof(HEADER);
+  }
+
+  return 0;
+}
 
 void printSerialMsg(const char * msg) {
   if (Serial) {
@@ -115,6 +155,11 @@ if (!APDS.begin()) {
     while (1);
   }
 
+  // get binary leading config and interpret as string
+  uint8_t cfg[100];
+  auto n = get_config_bytes(cfg, 100);
+  String userName(cfg, n);
+
   if (!BLE.begin()) {
     printSerialMsg("Failled to initialized BLE!");
 
@@ -129,10 +174,14 @@ if (!APDS.begin()) {
   address.toUpperCase();
 
   name = "BLESense-";
-  name += address[address.length() - 5];
-  name += address[address.length() - 4];
-  name += address[address.length() - 2];
-  name += address[address.length() - 1];
+  if (userName) {
+    name += userName;
+  } else {
+    name += address[address.length() - 5];
+    name += address[address.length() - 4];
+    name += address[address.length() - 2];
+    name += address[address.length() - 1];
+  }
 
   if (Serial) {
     Serial.print("name = ");
