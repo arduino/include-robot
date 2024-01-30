@@ -21,7 +21,7 @@ git clone https://github.com/scratchfoundation/scratch-gui.git
 2. Install all dependency 
 
 ```
-cd scatch-gui
+cd scratch-gui
 npm install
 ```
 
