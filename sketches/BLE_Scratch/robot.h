@@ -13,7 +13,9 @@ private:
 public:
   // this is the constructor of the class
   Robot(int rightWheelPin, int leftWheelPin);
-  void move(int steps);
+  void moveForward(int steps);
+  void moveBackward(int steps);
   void turnRight();
+  void turnLeft();
 };
 #endif

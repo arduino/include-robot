@@ -584,17 +584,19 @@ void onRobotActionCharacteristicWrite(BLEDevice central, BLECharacteristic chara
   switch (action) {
     case robotAction::MOVE_FORWARD:
       Serial.println("go forward");
-      myra.move(1);
+      myra.moveForward(steps);
       break;
     case robotAction::MOVE_BACKWARD:
       Serial.println("go backward");
-      myra.move(-1);
+      myra.moveBackward(steps);
       break;
     case robotAction::TURN_LEFT:
       Serial.println("turn left");
+      myra.turnLeft();
       break;
     case robotAction::TURN_RIGHT:
       Serial.println("turn right");
+      myra.turnRight();
       break;
   }
 }

@@ -155,7 +155,7 @@ class IncludeRobot {
                     text: formatMessage({
                         id: 'IncludeRobot.turnRight',
                         default: 'Turn right [DEGREE] degree',
-                        description: 'Turn rigth of degree.'
+                        description: 'Turn right of degree.'
                     }),
                     arguments: {
                         DEGREE: {
@@ -212,16 +212,14 @@ class IncludeRobot {
 
     turnLeft(args) {
         let degree = Cast.toNumber(args.DEGREE);
-        degree = Math.max(360, Math.min(0, degree    ));
-
-        return this.setServoMotors({ SPEED_LEFT: speed, SPEED_RIGHT: speed });
+        degree = Math.max(360, Math.min(0, degree));
+        return DEVICE.turnLeft(degree)
     }
 
     turnRight(args) {
-        let speed = Cast.toNumber(args.DEGREE);
-        speed = Math.max(0, Math.min(100, speed));
-
-        return this.setServoMotors({ SPEED_LEFT: -speed, SPEED_RIGHT: -speed });
+        let degree = Cast.toNumber(args.DEGREE);
+        degree = Math.max(360, Math.min(0, degree    ));
+        return DEVICE.turnRight(degree)
     }
 
     stop() {

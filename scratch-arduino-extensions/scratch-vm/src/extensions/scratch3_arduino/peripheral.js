@@ -512,7 +512,7 @@ class ArduinoPeripheral {
         return this._send(BLECommand.ROBOT_ACTIONS, robotAction);
     }
 
-    turnRigth(degrees) {
+    turnRight(degrees) {
         const robotAction = [
             ROBOT_ACTIONS.TURN_RIGTH,
             degrees,
