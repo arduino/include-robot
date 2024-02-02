@@ -35,3 +35,5 @@ node ../scratch-arduino-extensions/scripts/patch-gui.js
 ```
 npm start
 ```
+
+5. Open the scratch GUI at `http://127.0.0.1:8601`
