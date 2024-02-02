@@ -41,7 +41,7 @@ class IncludeRobot {
      * @return {string} - the ID of this extension.
      */
     static get EXTENSION_ID() {
-        return 'ArduinoIncludeRobot';
+        return 'IncludeRobot';
     }
 
     /**
@@ -108,14 +108,14 @@ class IncludeRobot {
                     opcode: 'goForward',
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
-                        id: 'IncludeRobot.goForward',
-                        default: 'Go forward [SPEED]%',
-                        description: 'set the servo motor speed.'
+                        id: 'IncludeRobot.moveForward',
+                        default: 'Go forward [STEPS] steps',
+                        description: 'go forward for a given amount of steps.'
                     }),
                     arguments: {
-                        SPEED: {
+                        STEPS: {
                             type: ArgumentType.NUMBER,
-                            defaultValue: '50'
+                            defaultValue: '1'
                         }
                     }
                 },
@@ -123,14 +123,14 @@ class IncludeRobot {
                     opcode: 'goBackward',
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
-                        id: 'IncludeRobot.goBackward',
-                        default: 'Go backword [SPEED]%',
-                        description: 'set the servo motor speed.'
+                        id: 'IncludeRobot.moveBackward',
+                        default: 'Go backward [STEPS] steps',
+                        description: 'go backward for a given amount of steps'
                     }),
                     arguments: {
-                        SPEED: {
+                        STEPS: {
                             type: ArgumentType.NUMBER,
-                            defaultValue: '50'
+                            defaultValue: '1'
                         }
                     }
                 },
@@ -139,13 +139,13 @@ class IncludeRobot {
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
                         id: 'IncludeRobot.turnLeft',
-                        default: 'Turn left [SPEED]%',
-                        description: 'set the servo motor speed.'
+                        default: 'Turn left [DEGREE] degree',
+                        description: 'Turn left of degree.'
                     }),
                     arguments: {
-                        SPEED: {
+                        DEGREE: {
                             type: ArgumentType.NUMBER,
-                            defaultValue: '50'
+                            defaultValue: '90'
                         }
                     }
                 },
@@ -154,13 +154,13 @@ class IncludeRobot {
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
                         id: 'IncludeRobot.turnRight',
-                        default: 'Turn right [SPEED]%',
-                        description: 'set the servo motor speed.'
+                        default: 'Turn right [DEGREE] degree',
+                        description: 'Turn rigth of degree.'
                     }),
                     arguments: {
-                        SPEED: {
+                        DEGREE: {
                             type: ArgumentType.NUMBER,
-                            defaultValue: '50'
+                            defaultValue: '90'
                         }
                     }
                 },
@@ -200,29 +200,25 @@ class IncludeRobot {
         };
     }
 
-    goForward(args) {
-        let speed = Cast.toNumber(args.SPEED);
-        speed = Math.max(0, Math.min(100, speed));
-
-        return this.setServoMotors({ SPEED_LEFT: -speed, SPEED_RIGHT: speed });
+    moveForward(args) {
+        let steps = Cast.toNumber(args.STEPS);
+        return DEVICE.moveForward(steps);
     }
 
-    goBackward(args) {
-        let speed = Cast.toNumber(args.SPEED);
-        speed = Math.max(0, Math.min(100, speed));
-
-        return this.setServoMotors({ SPEED_LEFT: speed, SPEED_RIGHT: -speed });
+    moveBackward(args) {
+        let steps = Cast.toNumber(args.STEPS);
+        return DEVICE.moveBackward(steps);
     }
 
     turnLeft(args) {
-        let speed = Cast.toNumber(args.SPEED);
-        speed = Math.max(0, Math.min(100, speed));
+        let degree = Cast.toNumber(args.DEGREE);
+        degree = Math.max(360, Math.min(0, degree    ));
 
         return this.setServoMotors({ SPEED_LEFT: speed, SPEED_RIGHT: speed });
     }
 
     turnRight(args) {
-        let speed = Cast.toNumber(args.SPEED);
+        let speed = Cast.toNumber(args.DEGREE);
         speed = Math.max(0, Math.min(100, speed));
 
         return this.setServoMotors({ SPEED_LEFT: -speed, SPEED_RIGHT: -speed });

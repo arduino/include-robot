@@ -37,7 +37,8 @@ const BLECharacteristic = {
  */
 const BLECommand = {
     RGB_LED: '6fbe1da7-6001-44de-92c4-bb6e04fb0212', // RGB led value, 0 => off, 255 => on
-    PIN_ACTIONS: '6fbe1da7-6002-44de-92c4-bb6e04fb0212' // Array of 3 bytes, action + pinNumber + data
+    PIN_ACTIONS: '6fbe1da7-6002-44de-92c4-bb6e04fb0212', // Array of 3 bytes, action + pinNumber + data
+    ROBOT_ACTIONS: '6fbe1da7-6003-44de-92c4-bb6e04fb0212' // Array of 2 bytes, action + data
 };
 
 
@@ -47,6 +48,13 @@ const BLE_PIN_ACTIONS = {
     ANALOGWRITE: 4,
     SERVOWRITE_AND_INITIALIZE: 6,
     SERVOSTOP: 7
+};
+
+const ROBOT_ACTIONS = {
+    MOVE_FORWARD: 0,
+    MOVE_BACKWARD: 1,
+    TURN_RIGTH: 2,
+    TURN_LEFT: 3,
 };
 
 /**
@@ -474,6 +482,43 @@ class ArduinoPeripheral {
         ];
 
         return this._send(BLECommand.PIN_ACTIONS, pinAction);
+    }
+
+    moveForward(steps) {
+        const robotAction = [
+            ROBOT_ACTIONS.MOVE_FORWARD,
+            steps,
+            0xFF
+        ];
+        console.log("sending move forward command to robot", robotAction, "steps: ", steps);
+        return this._send(BLECommand.ROBOT_ACTIONS, robotAction);
+    }
+
+    moveBackward(steps) {
+        const robotAction = [
+            ROBOT_ACTIONS.MOVE_BACKWARD,
+            steps,
+            0xFF
+        ];
+        return this._send(BLECommand.ROBOT_ACTIONS, robotAction);
+    }
+
+    turnLeft(degrees) {
+        const robotAction = [
+            ROBOT_ACTIONS.TURN_LEFT,
+            degrees,
+            0xFF
+        ];
+        return this._send(BLECommand.ROBOT_ACTIONS, robotAction);
+    }
+
+    turnRigth(degrees) {
+        const robotAction = [
+            ROBOT_ACTIONS.TURN_RIGTH,
+            degrees,
+            0xFF
+        ];
+        return this._send(BLECommand.ROBOT_ACTIONS, robotAction);
     }
 
     /**
