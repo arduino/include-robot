@@ -32,7 +32,7 @@
 #include <Arduino_LSM9DS1.h>
 #endif
 
-
+#include "robot.h"
 #include <Servo.h>
 #include <ArduinoBLE.h>
 
@@ -42,6 +42,12 @@ const int VERSION = 0x00000000;
 const uint8_t HEADER[] = { 0x8a, 0x48, 0x92, 0xdf, 0xaa, 0x69, 0x5c, 0x41 };
 const uint8_t MAGIC = 0x7F;
 const uint8_t MEMORY_SIZE = 256000;
+
+// TODO:  we could add a specific action to set the pin for the wheels
+const int ROBOT_LEFT_WHEEL = 3;
+const int ROBOT_RIGHT_WHEEL = 4;
+
+Robot myra = Robot(ROBOT_RIGHT_WHEEL,ROBOT_LEFT_WHEEL);
 
 BLEService service(BLE_SENSE_UUID("0000"));
 BLEUnsignedIntCharacteristic versionCharacteristic(BLE_SENSE_UUID("1001"), BLERead);
@@ -415,8 +421,13 @@ enum pinAction {
   SERVOWRITE = 5,
   SERVOWRITE_AND_INITIALIZE = 6,
   SERVOSTOP = 7,
-  // robot action
-  MOVE = 8,
+};
+
+enum robotAction {
+  MOVE_FORWARD = 0,
+  MOVE_BACKWARD = 1,
+  TURN_RIGHT = 2,
+  TURN_LEFT = 3,
 };
 
 static const int SERVO = 0x4;
@@ -428,48 +439,6 @@ typedef struct WrapServo {
 };
 
 WrapServo *root = NULL;
-
-
-class Robot {
-    Servo rightWheel;
-    Servo leftWheel;
-    /*
-      [0,89] => go forward (from faster to slower)
-      90 => stop
-      [91-180] => go bacward (from lower to faster)
-     */
-    public:
-        Robot(int rightWheelPin, int leftWheelPin) {
-            rightWheel = Servo();
-            leftWheel = Servo();
-            rightWheel.attach(rightWheelPin);
-            leftWheel.attach(leftWheelPin);
-        };
-        void move(int steps){
-         for (int i = 0; i < steps; i++){
-              // TODO: use millis() instead of delay
-              rightWheel.write(80);
-              leftWheel.write(100);
-              delay(1000);
-              rightWheel.write(90);
-              leftWheel.write(90);
-              // TODO: blink led two times
-              delay(500);
-          }
-        };
-        void turnRight(){
-            rightWheel.write(45);
-            leftWheel.write(-135);
-            delay(500);
-            rightWheel.write(0);
-            leftWheel.write(0);
-          delay(500);
-        };
-        void turnLeft();
-        void stop();
-};
-
-Robot myra = Robot(4,3);
 
 void onPinActionCharacteristicWrite(BLEDevice central, BLECharacteristic characteristic) {
   enum pinAction action = (enum pinAction)pinActionCharacteristic[0];
@@ -604,8 +573,6 @@ void setLedPinValue(int pin, int value) {
   }
 }
 
-
-
 void onRobotActionCharacteristicWrite(BLEDevice central, BLECharacteristic characteristic) {
   enum pinAction action = (enum pinAction)pinRobotCharacteristic[0];
   int8_t steps = pinActionCharacteristic[1];
@@ -615,9 +582,19 @@ void onRobotActionCharacteristicWrite(BLEDevice central, BLECharacteristic chara
   Serial.print("steps = ");
   Serial.println(steps);
   switch (action) {
-    case MOVE:
+    case robotAction::MOVE_FORWARD:
       Serial.println("go forward");
       myra.move(1);
+      break;
+    case robotAction::MOVE_BACKWARD:
+      Serial.println("go backward");
+      myra.move(-1);
+      break;
+    case robotAction::TURN_LEFT:
+      Serial.println("turn left");
+      break;
+    case robotAction::TURN_RIGHT:
+      Serial.println("turn right");
       break;
   }
 }
