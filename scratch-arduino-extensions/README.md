@@ -15,7 +15,7 @@ TBD
 
 ```
 cd ..
-git clone https://github.com/scratchfoundation/scratch-gui.git
+git clone --depth 1 https://github.com/scratchfoundation/scratch-gui.git
 ```
 
 2. Install all dependency 
