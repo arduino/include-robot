@@ -105,7 +105,7 @@ class IncludeRobot {
 
             blocks: [
                 {
-                    opcode: 'goForward',
+                    opcode: 'moveForward',
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
                         id: 'IncludeRobot.moveForward',
@@ -120,7 +120,7 @@ class IncludeRobot {
                     }
                 },
                 {
-                    opcode: 'goBackward',
+                    opcode: 'moveBackward',
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
                         id: 'IncludeRobot.moveBackward',

@@ -55,7 +55,7 @@ BLEUnsignedIntCharacteristic versionCharacteristic(BLE_SENSE_UUID("1001"), BLERe
 BLECharacteristic sensorsData(BLE_SENSE_UUID("1010"), BLENotify, 16 * sizeof(float));                     // first element it's type and data
 BLECharacteristic rgbLedCharacteristic(BLE_SENSE_UUID("6001"), BLEWrite, 3 * sizeof(byte));               // Array of 3 bytes, RGB
 BLECharacteristic pinActionCharacteristic(BLE_SENSE_UUID("6002"), BLERead | BLEWrite, 4 * sizeof(byte));  // Array of 3 bytes, action + pinNumber + data
-BLECharacteristic              pinRobotCharacteristic           (BLE_SENSE_UUID("6003"), BLERead | BLEWrite, 4 * sizeof(byte)); // Array of 3 bytes, action + data
+BLECharacteristic pinRobotCharacteristic           (BLE_SENSE_UUID("6003"), BLERead | BLEWrite, 4 * sizeof(byte)); // Array of 3 bytes, action + data
 
 // String to calculate the local and device name
 String name;
