@@ -15,25 +15,25 @@ TBD
 
 ```
 cd ..
-git clone https://github.com/scratchfoundation/scratch-gui.git
+git clone --depth 1 https://github.com/scratchfoundation/scratch-gui.git
 ```
 
 2. Install all dependency 
 
 ```
-cd scatch-gui
+cd scratch-gui
 npm install
 ```
 
 3. Run the patch/link script
 
 ```
-node ./scripts/patch-gui.js
+node ../scratch-arduino-extensions/scripts/patch-gui.js
 ```
 
 4. Start the scratch gui
 ```
-cd ../scratch-gui
-
 npm start
 ```
+
+5. Open the scratch GUI at `http://127.0.0.1:8601`
