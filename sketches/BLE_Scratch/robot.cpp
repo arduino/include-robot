@@ -1,7 +1,6 @@
 #include "robot.h"
 #include <Servo.h>
 
-// define the constructor of the Flasher class
 Robot::Robot(int rightWheelPin, int leftWheelPin) {
   rightWheel = Servo();
   leftWheel = Servo();
@@ -13,7 +12,6 @@ Robot::Robot(int rightWheelPin, int leftWheelPin) {
   leftWheel.write(90);
 }
 
-// define the concrete update method of the class
 void Robot::moveForward(int steps) {
   // TODO: use millis() instead of delay
   // for loop on steps

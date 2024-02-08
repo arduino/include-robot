@@ -426,6 +426,7 @@ enum robotAction {
   MOVE_BACKWARD = 1,
   TURN_RIGHT = 2,
   TURN_LEFT = 3,
+  STOP = 3,
 };
 
 static const int SERVO = 0x4;
@@ -595,6 +596,10 @@ void onRobotActionCharacteristicWrite(BLEDevice central, BLECharacteristic chara
     case robotAction::TURN_RIGHT:
       Serial.println("turn right");
       myra.turnRight();
+      break;
+    case robotAction::STOP:
+      Serial.println("stop");
+      myra.stop();
       break;
   }
 }
