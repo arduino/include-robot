@@ -9,6 +9,12 @@ class Robot {
 private:
   Servo rightWheel;
   Servo leftWheel;
+   int speed;
+  /*
+      [0,89]     => go forward (from faster to slower)
+      90         => stop
+      [91-180]   => go backward (from lower to faster)
+     */
 
 public:
   // this is the constructor of the class

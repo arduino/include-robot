@@ -9,9 +9,7 @@
 #define ARDUINO_NANO_BLE_SENSE_R2
 
 // when this is defined the board will print debug messages on serial
-//#define DEBUG
-
-
+// #define DEBUG
 
 
 #if defined(ARDUINO_NANO_BLE_SENSE)
