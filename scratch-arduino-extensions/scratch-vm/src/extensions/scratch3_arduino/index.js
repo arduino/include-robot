@@ -164,36 +164,7 @@ class IncludeRobot {
                         }
                     }
                 },
-                {
-                    opcode: 'stop',
-                    blockType: BlockType.COMMAND,
-                    text: formatMessage({
-                        id: 'IncludeRobot.stop',
-                        default: 'Stop',
-                        description: 'stop the servo motor.'
-                    }),
-                    arguments: {}
-                },
-                '---',
-                {
-                    opcode: 'setServoMotors',
-                    blockType: BlockType.COMMAND,
-                    text: formatMessage({
-                        id: 'IncludeRobot.setServoMotors',
-                        default: `Set motor [SPEED_LEFT]% [SPEED_RIGHT]%`,
-                        description: 'set 2 servo motors simultaneously.'
-                    }),
-                    arguments: {
-                        SPEED_LEFT: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: '50'
-                        },
-                        SPEED_RIGHT: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: '50'
-                        }
-                    }
-                },
+
             ],
 
             menus: {}
@@ -220,27 +191,6 @@ class IncludeRobot {
         let degree = Cast.toNumber(args.DEGREE);
         degree = Math.max(360, Math.min(0, degree    ));
         return DEVICE.turnRight(degree)
-    }
-
-    stop() {
-        return DEVICE.stopServoMotor(IncludeRobot.SERVO_LEFT_PIN)
-            .then(() => DEVICE.stopServoMotor(IncludeRobot.SERVO_RIGHT_PIN));
-    }
-
-    setServoMotors(args) {
-        let speedLeft = Cast.toNumber(args.SPEED_LEFT);
-        let speedRight = Cast.toNumber(args.SPEED_RIGHT);
-
-        speedLeft = Math.max(-100, Math.min(100, speedLeft));
-        speedRight = Math.max(-100, Math.min(100, speedRight));
-
-        let lSpeed = 90 + 90 * speedLeft / 100;
-        let rSpeed = 90 + 90 * speedRight / 100;
-
-        console.log("[DEBUG]", "left:", lSpeed, "right:", rSpeed);
-
-        return DEVICE.setServoMotor(IncludeRobot.SERVO_LEFT_PIN, lSpeed)
-            .then(() => DEVICE.setServoMotor(IncludeRobot.SERVO_RIGHT_PIN, rSpeed));
     }
 }
 
