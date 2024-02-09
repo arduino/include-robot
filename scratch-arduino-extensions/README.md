@@ -44,3 +44,12 @@ npm start
 ```
 
 5. Open the scratch GUI at `http://127.0.0.1:8601`
+
+
+### Notes about patch scripts
+
+1. the `patch-gui.js` script copies a custom Arduino extension in the extensions folder and modifies the code of 
+    Scratch's extension manager to include that extension
+
+2. the `add-banner.js` script copies a new React component in the `scratch-gui` folder and modifies the `gui.jsx` file 
+    to include that component
