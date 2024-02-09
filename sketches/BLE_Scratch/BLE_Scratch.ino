@@ -4,12 +4,12 @@
 
 // Uncomment one of these defines to select which board you are using
 
-//#define ARDUINO_NANO_BLE_SENSE
+#define ARDUINO_NANO_BLE_SENSE
 //#define ARDUINO_NANO_BLE
-#define ARDUINO_NANO_BLE_SENSE_R2
+//#define ARDUINO_NANO_BLE_SENSE_R2
 
 // when this is defined the board will print debug messages on serial
-#define DEBUG
+//#define DEBUG
 
 
 
