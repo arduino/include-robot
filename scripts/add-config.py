@@ -14,11 +14,10 @@ def main():
     cfg = sys.argv[1]
 
     base = os.path.dirname(os.path.realpath(__file__))
-    binary = os.path.join(base, "../sketches/BLE_Scratch/build/arduino.mbed_nano.nano33ble/BLE_Scratch.ino.with_bootloader.bin")
+    binary = os.path.join(base, "../sketches/BLE_Scratch/build/arduino.mbed_nano.nano33ble/BLE_Scratch.ino.bin")
     new_name = binary+".cfg.bin"
     
     with open(binary, 'rb') as f1:
-        f1.seek(0)
         with open(new_name, 'wb') as f2:
             f2.write(f1.read())
             f2.write(header)
