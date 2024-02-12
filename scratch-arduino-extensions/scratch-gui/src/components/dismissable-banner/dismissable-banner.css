@@ -1,0 +1,67 @@
+.alert .inner {
+  display: block;
+  padding: 6px;
+  margin: 0px;
+  border-radius: 3px;
+  background-color: rgb(212,212,212);
+}
+
+.icon-remove:after{
+    font-size: 24px;
+    display: inline-block;
+    content: "\00d7"; /* This will render the 'X' */
+  }
+
+.alert .close {
+  float: right;
+  margin: 3px 12px 0px 0px;
+  cursor: pointer;
+}
+
+.alert .inner,.alert .close {
+  color: rgb(88,88,88);
+}
+
+.alert input {
+  display: none;
+}
+
+.alert input:checked ~ * {
+  animation-name: dismiss,hide;
+  animation-duration: 300ms;
+  animation-iteration-count: 1;
+  animation-timing-function: ease;
+  animation-fill-mode: forwards;
+  animation-delay: 0s,100ms;
+}
+
+.alert.success .inner {
+  border: 1px solid rgb(214,233,198);
+  background-color: #F5D354;
+}
+
+.alert.success .inner,.alert.success .close {
+  color: #434F54;
+}
+
+@keyframes dismiss {
+  0% {
+    opacity: 1;
+  }
+  90%, 100% {
+    opacity: 0;
+    font-size: 0.1px;
+    transform: scale(0);
+  }
+}
+
+@keyframes hide {
+  100% {
+    height: 0px;
+    width: 0px;
+    overflow: hidden;
+    margin: 0px;
+    padding: 0px;
+    border: 0px;
+  }
+}
