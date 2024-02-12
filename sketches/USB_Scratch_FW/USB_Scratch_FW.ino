@@ -1,7 +1,7 @@
 // Firmware to connect an Arduino Nano 33 BLE / BLE Sense to the experimental
 // version of scratch hosted on https://labs.arduino.cc
 //
-// v2 mbanzi added the ability to work also on regular Nano 33 BLE 
+// v2 mbanzi added the ability to work also on regular Nano 33 BLE
 //
 // configuration: define or undefine BLE_SENSE depending on the board you're using
 
@@ -17,7 +17,7 @@
 #include <Servo.h>
 
 // define if we're using BLE SENSE or regular BLE
-//#define BLE_SENSE 
+//#define BLE_SENSE
 
 
 
@@ -36,28 +36,33 @@ int proximity = 255;
 */
 void setup() {
   SerialUSB.begin(9600);
-  while (!SerialUSB);
+  while (!SerialUSB)
+    ;
 
-#ifdef BLE_SENSE 
+#ifdef BLE_SENSE
   if (!APDS.begin()) {
     sendError("Failled to initialized APDS!");
-    while (1);
+    while (1)
+      ;
   }
 
   if (!HTS.begin()) {
     sendError("Failled to initialized HTS!");
-    while (1);
+    while (1)
+      ;
   }
 
   if (!BARO.begin()) {
     sendError("Failled to initialized BARO!");
-    while (1);
+    while (1)
+      ;
   }
 #endif
-  
+
   if (!IMU.begin()) {
     sendError("Failled to initialized IMU!");
-    while (1);
+    while (1)
+      ;
   }
 }
 
@@ -124,7 +129,7 @@ void readCommand(String str) {
   }
 
   if (myObject.hasOwnProperty("cmd")) {
-    String command = String((const char *)myObject["cmd"]);
+    String command = String((const char*)myObject["cmd"]);
 
     if (command == "ledColor") {
       setLedColor(myObject);
@@ -190,7 +195,7 @@ typedef struct WrapServo {
 WrapServo* root = NULL;
 
 //{"cmd":"pinAction","data":{"action":1, "pin":12, "value":3}}
-void doPinAction(JSONVar & json) {
+void doPinAction(JSONVar& json) {
 
   JSONVar jsonData = json["data"];
 
@@ -319,25 +324,25 @@ void sendData(const char* type, JSONVar& jsonData) {
 void sendAnalogPins() {
   int value = analogRead(0);
   sendData("pinA0", value);
-  
+
   value = analogRead(1);
   sendData("pinA1", value);
-  
+
   value = analogRead(2);
   sendData("pinA2", value);
-  
+
   value = analogRead(3);
   sendData("pinA3", value);
-  
+
   value = analogRead(4);
   sendData("pinA4", value);
-  
+
   value = analogRead(5);
   sendData("pinA5", value);
-  
+
   value = analogRead(6);
   sendData("pinA6", value);
-  
+
   value = analogRead(7);
   sendData("pinA7", value);
 }
@@ -380,7 +385,7 @@ void sendSensorsData() {
 }
 
 void getPressure() {
-#ifdef BLE_SENSE  
+#ifdef BLE_SENSE
   float pressure = BARO.readPressure();
 #else
   float pressure = 0.0;
@@ -389,16 +394,16 @@ void getPressure() {
 }
 
 void getTemperature() {
-#ifdef BLE_SENSE  
+#ifdef BLE_SENSE
   float temperature = HTS.readTemperature();
-#else 
+#else
   float temperature = 0.0;
 #endif
   sendData("temperature", temperature);
 }
 
 void getHumidity() {
-#ifdef BLE_SENSE  
+#ifdef BLE_SENSE
   float humidity = HTS.readHumidity();
 #else
   float humidity = 0.0;
@@ -422,7 +427,7 @@ void getAcceleration() {
 
 
 void getGyroscope() {
-  float gyroscopeX = 0, gyroscopeY = 0, gyroscopeZ = 0 ;
+  float gyroscopeX = 0, gyroscopeY = 0, gyroscopeZ = 0;
   if (IMU.gyroscopeAvailable()) {
     IMU.readGyroscope(gyroscopeX, gyroscopeY, gyroscopeZ);
   }
@@ -451,7 +456,7 @@ void getMagneticField() {
 
 
 void getColorData() {
-#ifdef BLE_SENSE  
+#ifdef BLE_SENSE
   if (APDS.colorAvailable()) {
     // read the color
     APDS.readColor(red, green, blue, ambientLight);
@@ -472,7 +477,7 @@ void getColorData() {
 }
 
 void getProximity() {
-#ifdef BLE_SENSE  
+#ifdef BLE_SENSE
   if (APDS.proximityAvailable()) {
     proximity = APDS.readProximity();
   }
@@ -484,7 +489,7 @@ void getProximity() {
 
 void getGesture() {
   int gesture = -1;
-#ifdef BLE_SENSE  
+#ifdef BLE_SENSE
   // check if a proximity reading is available
   if (APDS.gestureAvailable()) {
     gesture = APDS.readGesture();

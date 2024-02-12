@@ -14,21 +14,21 @@
 
 
 
-#if defined (ARDUINO_NANO_BLE_SENSE) 
+#if defined(ARDUINO_NANO_BLE_SENSE)
 #include <Arduino_APDS9960.h>
 #include <Arduino_HTS221.h>
 #include <Arduino_LPS22HB.h>
 #include <Arduino_LSM9DS1.h>
 #endif
 
-#if defined (ARDUINO_NANO_BLE_SENSE_R2)
+#if defined(ARDUINO_NANO_BLE_SENSE_R2)
 #include <Arduino_APDS9960.h>
 #include <Arduino_HS300x.h>
 #include <Arduino_LPS22HB.h>
 #include <Arduino_BMI270_BMM150.h>
 #endif
 
-#if defined (ARDUINO_NANO_BLE)
+#if defined(ARDUINO_NANO_BLE)
 #include <Arduino_LSM9DS1.h>
 #endif
 
@@ -39,16 +39,16 @@
 #define BLE_SENSE_UUID(val) ("6fbe1da7-" val "-44de-92c4-bb6e04fb0212")
 
 const int VERSION = 0x00000000;
-const uint8_t HEADER[] = {0x8a, 0x48, 0x92, 0xdf, 0xaa, 0x69, 0x5c, 0x41};
+const uint8_t HEADER[] = { 0x8a, 0x48, 0x92, 0xdf, 0xaa, 0x69, 0x5c, 0x41 };
 const uint8_t MAGIC = 0x7F;
 const uint8_t MEMORY_SIZE = 256000;
 
-BLEService                     service                       (BLE_SENSE_UUID("0000"));
-BLEUnsignedIntCharacteristic   versionCharacteristic         (BLE_SENSE_UUID("1001"), BLERead);
+BLEService service(BLE_SENSE_UUID("0000"));
+BLEUnsignedIntCharacteristic versionCharacteristic(BLE_SENSE_UUID("1001"), BLERead);
 
-BLECharacteristic              sensorsData                   (BLE_SENSE_UUID("1010"), BLENotify, 16 * sizeof(float)); // first element it's type and data
-BLECharacteristic              rgbLedCharacteristic          (BLE_SENSE_UUID("6001"), BLEWrite, 3 * sizeof(byte)); // Array of 3 bytes, RGB
-BLECharacteristic              pinActionCharacteristic       (BLE_SENSE_UUID("6002"), BLERead | BLEWrite, 4 * sizeof(byte)); // Array of 3 bytes, action + pinNumber + data
+BLECharacteristic sensorsData(BLE_SENSE_UUID("1010"), BLENotify, 16 * sizeof(float));                     // first element it's type and data
+BLECharacteristic rgbLedCharacteristic(BLE_SENSE_UUID("6001"), BLEWrite, 3 * sizeof(byte));               // Array of 3 bytes, RGB
+BLECharacteristic pinActionCharacteristic(BLE_SENSE_UUID("6002"), BLERead | BLEWrite, 4 * sizeof(byte));  // Array of 3 bytes, action + pinNumber + data
 
 // String to calculate the local and device name
 String name;
@@ -60,7 +60,7 @@ int delayTime = 10;
 int red = 0, green = 0, blue = 0, ambientLight = 0;
 int proximity = 255;
 
-void printSerialMsg(const char * msg) {
+void printSerialMsg(const char *msg) {
   if (Serial) {
     Serial.println(msg);
   }
@@ -80,24 +80,24 @@ uint32_t get_config_bytes(uint8_t *buff, const uint32_t n) {
 
   uint32_t addr = 0;
 
-  while(1){
+  while (1) {
     auto found = search_in_mem(addr, MEMORY_SIZE, HEADER, sizeof(HEADER));
-    if (found == 0){
+    if (found == 0) {
       printSerialMsg("config header not founded");
       return 0;
     }
     printSerialMsg("config header founded");
-    
+
     uint8_t magic = *reinterpret_cast<uint8_t *>(found + sizeof(HEADER));
     if (magic == MAGIC) {
       printSerialMsg("config magic number founded");
-    
+
       uint8_t size = *reinterpret_cast<uint8_t *>(found + sizeof(HEADER) + 1);
       memcpy(buff, reinterpret_cast<void *>(found + sizeof(HEADER) + 2), min(size, n));
 
       return size;
     }
-    
+
     addr = found + sizeof(HEADER);
   }
 
@@ -109,53 +109,61 @@ uint32_t get_config_bytes(uint8_t *buff, const uint32_t n) {
 void setup() {
   Serial.begin(9600);
 #ifdef DEBUG
-  while (!Serial);
+  while (!Serial)
+    ;
   Serial.println("Started");
 #endif
 
-#if defined (ARDUINO_NANO_BLE_SENSE) 
-if (!APDS.begin()) {
+#if defined(ARDUINO_NANO_BLE_SENSE)
+  if (!APDS.begin()) {
     printSerialMsg("Failled to initialized APDS!");
-    while (1);
+    while (1)
+      ;
   }
 
   if (!HTS.begin()) {
     printSerialMsg("Failled to initialized HTS!");
 
-    while (1);
+    while (1)
+      ;
   }
 
   if (!BARO.begin()) {
     printSerialMsg("Failled to initialized BARO!");
 
-    while (1);
+    while (1)
+      ;
   }
-#endif  
+#endif
 
-#if defined (ARDUINO_NANO_BLE_SENSE_R2)
- if (!APDS.begin()) {
+#if defined(ARDUINO_NANO_BLE_SENSE_R2)
+  if (!APDS.begin()) {
     printSerialMsg("Failled to initialized APDS!");
-    while (1);
+    while (1)
+      ;
   }
 
   if (!HS300x.begin()) {
     printSerialMsg("Failled to initialized HTS!");
-    while (1);
+    while (1)
+      ;
   }
 
   if (!BARO.begin()) {
     printSerialMsg("Failled to initialized BARO!");
-    while (1);
+    while (1)
+      ;
   }
-#endif 
+#endif
 
 
 
-// All 3 variants have an IMU on it
+  // All 3 variants have an IMU on it
   if (!IMU.begin()) {
     printSerialMsg("Failled to initialized IMU!");
 
-    while (1);
+    while (1)
+      ;
   }
 
   // get binary leading config and interpret as string
@@ -166,7 +174,8 @@ if (!APDS.begin()) {
   if (!BLE.begin()) {
     printSerialMsg("Failled to initialized BLE!");
 
-    while (1);
+    while (1)
+      ;
   }
 
   String address = BLE.address();
@@ -222,16 +231,16 @@ void loop() {
   while (BLE.connected()) {
     if (sensorsData.subscribed()) {
 
-      switch(notificationState) {
+      switch (notificationState) {
         case NOTIFY_FIRST_PART:
-        sendFirstPartData();
-        notificationState = NOTIFY_SECOND_PART;
-        break;
+          sendFirstPartData();
+          notificationState = NOTIFY_SECOND_PART;
+          break;
 
         case NOTIFY_SECOND_PART:
-        sendSecondPartData();
-        notificationState = NOTIFY_FIRST_PART;
-        break;
+          sendSecondPartData();
+          notificationState = NOTIFY_FIRST_PART;
+          break;
 
         default:
           notificationState = NOTIFY_FIRST_PART;
@@ -245,7 +254,7 @@ void loop() {
 void sendFirstPartData() {
 
 
- #if defined (ARDUINO_NANO_BLE_SENSE) 
+#if defined(ARDUINO_NANO_BLE_SENSE)
   /*
      BARO sensor
   */
@@ -261,8 +270,8 @@ void sendFirstPartData() {
   float humidity = HTS.readHumidity();
   delay(delayTime);
 
-#elif defined (ARDUINO_NANO_BLE_SENSE_R2) 
- /*
+#elif defined(ARDUINO_NANO_BLE_SENSE_R2)
+  /*
      BARO sensor
   */
   float pressure = BARO.readPressure();
@@ -280,7 +289,7 @@ void sendFirstPartData() {
 #else
   float pressure = 0;
   float temperature = 0;
-  float humidity = 0;  
+  float humidity = 0;
 #endif
 
   /*
@@ -292,7 +301,7 @@ void sendFirstPartData() {
   }
   delay(delayTime);
 
-  float gyroscopeX = 0, gyroscopeY = 0, gyroscopeZ = 0 ;
+  float gyroscopeX = 0, gyroscopeY = 0, gyroscopeZ = 0;
   if (IMU.gyroscopeAvailable()) {
     IMU.readGyroscope(gyroscopeX, gyroscopeY, gyroscopeZ);
   }
@@ -332,8 +341,8 @@ void sendFirstPartData() {
 }
 
 void sendSecondPartData() {
- int gesture = -1;
-#if defined (ARDUINO_NANO_BLE_SENSE) || defined (ARDUINO_NANO_BLE_SENSE_R2) 
+  int gesture = -1;
+#if defined(ARDUINO_NANO_BLE_SENSE) || defined(ARDUINO_NANO_BLE_SENSE_R2)
   /*
      APDS sensor
   */
@@ -350,7 +359,7 @@ void sendSecondPartData() {
   }
   delay(delayTime);
 
- 
+
   // check if a proximity reading is available
   if (APDS.gestureAvailable()) {
     gesture = APDS.readGesture();
@@ -409,18 +418,18 @@ static const int SERVO = 0x4;
 
 typedef struct WrapServo {
   Servo s;
-  WrapServo* next = NULL;
+  WrapServo *next = NULL;
   int pin;
 };
 
-WrapServo* root = NULL;
+WrapServo *root = NULL;
 
 void onPinActionCharacteristicWrite(BLEDevice central, BLECharacteristic characteristic) {
   enum pinAction action = (enum pinAction)pinActionCharacteristic[0];
   uint8_t pinNumber = pinActionCharacteristic[1];
   uint8_t pinValue = pinActionCharacteristic[2];
 
-  uint8_t response[4] = {0xFF, pinNumber, 0xFF, 0xFF};
+  uint8_t response[4] = { 0xFF, pinNumber, 0xFF, 0xFF };
   uint16_t value;
   WrapServo *n, *nxt;
 
