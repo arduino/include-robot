@@ -490,7 +490,6 @@ class ArduinoPeripheral {
             steps,
             0xFF
         ];
-        console.log("sending move forward command to robot", robotAction, "steps: ", steps);
         return this._send(BLECommand.ROBOT_ACTIONS, robotAction);
     }
 

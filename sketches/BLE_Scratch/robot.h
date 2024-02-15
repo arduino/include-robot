@@ -1,5 +1,4 @@
-#ifndef Robot_h
-#define Robot_h
+#pragma once
 
 #include <Arduino.h>
 #include <Servo.h>
@@ -14,13 +13,12 @@ private:
       90         => stop
       [91-180]   => go backward (from lower to faster)
      */
-
 public:
-  // this is the constructor of the class
   Robot(int rightWheelPin, int leftWheelPin);
-  void moveForward(int steps);
-  void moveBackward(int steps);
+  
+  void moveForward(const int steps);
+  void moveBackward(const int steps);
   void turnRight();
   void turnLeft();
+  void stop();
 };
-#endif

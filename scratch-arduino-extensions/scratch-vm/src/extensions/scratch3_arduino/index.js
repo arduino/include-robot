@@ -144,7 +144,7 @@ class IncludeRobot {
                     }),
                     arguments: {
                         DEGREE: {
-                            type: ArgumentType.NUMBER,
+                            type: ArgumentType.ANGLE,
                             defaultValue: '90'
                         }
                     }
@@ -159,7 +159,7 @@ class IncludeRobot {
                     }),
                     arguments: {
                         DEGREE: {
-                            type: ArgumentType.NUMBER,
+                            type: ArgumentType.ANGLE,
                             defaultValue: '90'
                         }
                     }
@@ -189,7 +189,7 @@ class IncludeRobot {
 
     turnRight(args) {
         let degree = Cast.toNumber(args.DEGREE);
-        degree = Math.max(360, Math.min(0, degree    ));
+        degree = Math.max(360, Math.min(0, degree));
         return DEVICE.turnRight(degree)
     }
 }

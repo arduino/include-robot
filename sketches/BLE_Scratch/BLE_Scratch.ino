@@ -9,7 +9,7 @@
 #define ARDUINO_NANO_BLE_SENSE_R2
 
 // when this is defined the board will print debug messages on serial
-// #define DEBUG
+#define DEBUG
 
 
 #if defined(ARDUINO_NANO_BLE_SENSE)
@@ -178,7 +178,6 @@ void setup() {
 
   if (!BLE.begin()) {
     printSerialMsg("Failled to initialized BLE!");
-
     while (1)
       ;
   }
@@ -485,13 +484,13 @@ void onPinActionCharacteristicWrite(BLEDevice central, BLECharacteristic charact
       break;
     case SERVOWRITE:
       // find servo
-       n = root;
-       while (n != NULL) {
-         if (n->pin == pinNumber) {
-           break;
-         }
-         n = n->next;
-       }
+      n = root;
+      while (n != NULL) {
+        if (n->pin == pinNumber) {
+          break;
+        }
+        n = n->next;
+      }
       if (n != NULL) {
         n->s.write(pinValue);
       }
@@ -574,32 +573,27 @@ void setLedPinValue(int pin, int value) {
 
 void onRobotActionCharacteristicWrite(BLEDevice central, BLECharacteristic characteristic) {
   enum pinAction action = (enum pinAction)pinRobotCharacteristic[0];
-  int8_t steps = pinActionCharacteristic[1];
+  int8_t arg = pinRobotCharacteristic[1];
 
-  Serial.print("ROBOT action=");
-  Serial.println(action);
-  Serial.print("steps = ");
-  Serial.println(steps);
+  if (Serial) {
+    Serial.print("action=");
+    Serial.println(action);
+    Serial.print("arg=");
+    Serial.println(arg);
+  }
+
   switch (action) {
     case robotAction::MOVE_FORWARD:
-      Serial.println("go forward");
-      myra.moveForward(steps);
+      myra.moveForward(arg);
       break;
     case robotAction::MOVE_BACKWARD:
-      Serial.println("go backward");
-      myra.moveBackward(steps);
+      myra.moveBackward(arg);
       break;
     case robotAction::TURN_LEFT:
-      Serial.println("turn left");
       myra.turnLeft();
       break;
     case robotAction::TURN_RIGHT:
-      Serial.println("turn right");
       myra.turnRight();
-      break;
-    case robotAction::STOP:
-      Serial.println("stop");
-      myra.stop();
       break;
   }
 }
