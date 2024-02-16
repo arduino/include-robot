@@ -164,7 +164,21 @@ class IncludeRobot {
                         }
                     }
                 },
-
+                {
+                    opcode: 'setSpeed',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'IncludeRobot.setSpeed',
+                        default: 'Set speed [SPEED] percentage',
+                        description: 'Set the speed from 0(min) to 100 (max).'
+                    }),
+                    arguments: {
+                        SPEED: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: '10'
+                        }
+                    }
+                },
             ],
 
             menus: {}
@@ -192,6 +206,12 @@ class IncludeRobot {
         degree = Math.max(360, Math.min(0, degree));
         return DEVICE.turnRight(degree)
     }
+
+    setSpeed(args) {
+        let speed = Cast.toNumber(args.SPEED);
+        return DEVICE.setSpeed(speed);
+    }
+
 }
 
 

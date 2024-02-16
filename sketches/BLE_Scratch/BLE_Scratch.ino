@@ -9,7 +9,7 @@
 #define ARDUINO_NANO_BLE_SENSE_R2
 
 // when this is defined the board will print debug messages on serial
-#define DEBUG
+// #define DEBUG
 
 
 #if defined(ARDUINO_NANO_BLE_SENSE)
@@ -41,7 +41,7 @@ const uint8_t HEADER[] = { 0x8a, 0x48, 0x92, 0xdf, 0xaa, 0x69, 0x5c, 0x41 };
 const uint8_t MAGIC = 0x7F;
 const uint8_t MEMORY_SIZE = 256000;
 
-// TODO:  we could add a specific action to set the pin for the wheels
+// FIXME: the pin of the wheels could be obatined 
 const int ROBOT_LEFT_WHEEL = 3;
 const int ROBOT_RIGHT_WHEEL = 4;
 
@@ -425,7 +425,7 @@ enum robotAction {
   MOVE_BACKWARD = 1,
   TURN_RIGHT = 2,
   TURN_LEFT = 3,
-  STOP = 3,
+  SET_SPEED = 4,
 };
 
 static const int SERVO = 0x4;
@@ -595,6 +595,9 @@ void onRobotActionCharacteristicWrite(BLEDevice central, BLECharacteristic chara
     case robotAction::TURN_RIGHT:
       myra.turnRight();
       break;
+    case robotAction::SET_SPEED:
+      myra.setSpeed(arg);
+      break;  
   }
 }
 

@@ -6,10 +6,7 @@ Robot::Robot(int rightWheelPin, int leftWheelPin) {
   this->leftWheel = Servo();
   this->rightWheel.attach(rightWheelPin);
   this->leftWheel.attach(leftWheelPin);
-  this->speed = 10;
-  // used to calibrate the middle point at start up
-  this->rightWheel.write(90);
-  this->leftWheel.write(90);
+  this->setSpeed(10);
 }
 
 void Robot::moveForward(int steps) {
@@ -50,8 +47,9 @@ void Robot::turnLeft() {
     this->rightWheel.write(90);
     this->leftWheel.write(90);
 }
-
-void Robot::stop() {
-   this->rightWheel.detach();
-   this->leftWheel.detach();
+// set the speed of the robot. From 0 (no speed) to 100 (max speed)
+void Robot::setSpeed(int speed) {
+    speed = constrain(speed, 0, 100);
+    speed = map(speed, 0, 100, 0, 90);
+    this->speed = speed;
 }
