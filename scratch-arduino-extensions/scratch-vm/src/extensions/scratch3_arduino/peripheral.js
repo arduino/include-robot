@@ -501,32 +501,40 @@ class ArduinoPeripheral {
         ];
         return this._send(BLECommand.ROBOT_ACTIONS, robotAction);
     }
-    moveForwardTime(seconds) {
+    moveForwardTime(milliseconds) {
+        let [arg0, arg1] = convertUInt16ToBytes(milliseconds);
         const robotAction = [
             ROBOT_ACTIONS.MOVE_FORWARD_TIME,
-            seconds
+            arg0,
+            arg1
         ];
         return this._send(BLECommand.ROBOT_ACTIONS, robotAction);
     }
 
-    moveBackwardTime(seconds) {
+    moveBackwardTime(milliseconds) {
+        let [arg0, arg1] = convertUInt16ToBytes(milliseconds);
         const robotAction = [
             ROBOT_ACTIONS.MOVE_BACKWARD_TIME,
-            seconds
+            arg0,
+            arg1
         ];
         return this._send(BLECommand.ROBOT_ACTIONS, robotAction);
     }
-    turnLeft(ms) {
+    turnLeft(milliseconds) {
+        let [arg0, arg1] = convertUInt16ToBytes(milliseconds);
         const robotAction = [
             ROBOT_ACTIONS.TURN_LEFT,
-            ms
+            arg0,
+            arg1
         ];
         return this._send(BLECommand.ROBOT_ACTIONS, robotAction);
     }
-    turnRight(ms) {
+    turnRight(milliseconds){
+        let [arg0, arg1] = convertUInt16ToBytes(milliseconds);
         const robotAction = [
             ROBOT_ACTIONS.TURN_RIGTH,
-            ms
+            arg0,
+            arg1
         ];
         return this._send(BLECommand.ROBOT_ACTIONS, robotAction);
     }
@@ -622,6 +630,19 @@ class ArduinoPeripheral {
     getAnalogPinValue (pinNumber) {
         return this._pins.analog[pinNumber] || 0;
     }
+}
+
+
+function convertUInt16ToBytes(value) {
+    // Ensure value is within the range of 16-bit unsigned integer (0-65535)
+    value = Math.max(0, Math.min(0xFFFF, value));
+
+    // Extract the two bytes
+    let byte1 = (value >> 8) & 0x00FF; // Extract the higher 8 bits
+    let byte2 = value & 0x00FF; // Extract the lower 8 bits
+
+    // Return an array containing the two bytes
+    return [byte1, byte2];
 }
 
 

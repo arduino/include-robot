@@ -50,10 +50,10 @@ Robot myra = Robot(ROBOT_RIGHT_WHEEL,ROBOT_LEFT_WHEEL);
 BLEService service(BLE_SENSE_UUID("0000"));
 BLEUnsignedIntCharacteristic versionCharacteristic(BLE_SENSE_UUID("1001"), BLERead);
 
-BLECharacteristic sensorsData(BLE_SENSE_UUID("1010"), BLENotify, 16 * sizeof(float));                     // first element it's type and data
-BLECharacteristic rgbLedCharacteristic(BLE_SENSE_UUID("6001"), BLEWrite, 3 * sizeof(byte));               // Array of 3 bytes, RGB
-BLECharacteristic pinActionCharacteristic(BLE_SENSE_UUID("6002"), BLERead | BLEWrite, 4 * sizeof(byte));  // Array of 3 bytes, action + pinNumber + data
-BLECharacteristic pinRobotCharacteristic           (BLE_SENSE_UUID("6003"), BLERead | BLEWrite, 4 * sizeof(byte)); // Array of 3 bytes, action + data
+BLECharacteristic sensorsData(BLE_SENSE_UUID("1010"), BLENotify, 16 * sizeof(float)); // first element it's type and data
+BLECharacteristic rgbLedCharacteristic(BLE_SENSE_UUID("6001"), BLEWrite, 3 * sizeof(byte)); // Array of 3 bytes, RGB
+BLECharacteristic pinActionCharacteristic(BLE_SENSE_UUID("6002"), BLERead | BLEWrite, 4 * sizeof(byte)); // Array of 3 bytes, action + pinNumber + data
+BLECharacteristic pinRobotCharacteristic(BLE_SENSE_UUID("6003"), BLEWrite, 3 * sizeof(byte)); // Array of 3 bytes, 1 byte action + 2 bytes for data
 
 // String to calculate the local and device name
 String name;
@@ -579,37 +579,64 @@ enum robotAction {
 
 void onRobotActionCharacteristicWrite(BLEDevice central, BLECharacteristic characteristic) {
   enum pinAction action = (enum pinAction)pinRobotCharacteristic[0];
-  int8_t arg = pinRobotCharacteristic[1];
-
+  uint8_t arg1 = pinRobotCharacteristic[1];
   if (Serial) {
     Serial.print("action=");
     Serial.println(action);
-    Serial.print("arg=");
-    Serial.println(arg);
+    Serial.print("arg1=");
+    Serial.println(arg1);
   }
 
   switch (action) {
     case robotAction::MOVE_FORWARD_STEP:
-      myra.moveForward(arg, 1);
+      myra.moveForward(arg1, 1000);
       break;
     case robotAction::MOVE_BACKWARD_STEP:
-      myra.moveBackward(arg, 1);
+      myra.moveBackward(arg1, 1000);
       break;
-    case robotAction::TURN_LEFT:
-      myra.turnLeft(arg);
+    case robotAction::TURN_LEFT:{
+      uint16_t arg2 = static_cast<uint16_t>(pinRobotCharacteristic[2]);
+      uint16_t ms =  static_cast<uint16_t>(arg1) << 8 | arg2;
+      if (Serial) {
+        Serial.print("ms=");
+        Serial.println(ms);
+      }
+      myra.turnLeft(ms);
       break;
-    case robotAction::TURN_RIGHT:
-      myra.turnRight(arg);
+    }
+    case robotAction::TURN_RIGHT:{
+      uint16_t arg2 = static_cast<uint16_t>(pinRobotCharacteristic[2]);
+      uint16_t ms =  static_cast<uint16_t>(arg1) << 8 | arg2;
+      if (Serial) {
+        Serial.print("ms=");
+        Serial.println(ms);
+      }
+      myra.turnRight(ms);
       break;
+    }
     case robotAction::SET_SPEED:
-      myra.setSpeed(arg);
+      myra.setSpeed(arg1);
       break;
-    case robotAction::MOVE_FORWARD_TIME:
-      myra.moveForward(1, arg);
+    case robotAction::MOVE_FORWARD_TIME:{
+      uint16_t arg2 = static_cast<uint16_t>(pinRobotCharacteristic[2]);
+      uint16_t ms =  static_cast<uint16_t>(arg1) << 8 | arg2;
+      if (Serial) {
+        Serial.print("ms=");
+        Serial.println(ms);
+      }
+      myra.moveForward(1, ms);
       break;
-    case robotAction::MOVE_BACKWARD_TIME:
-      myra.moveBackward(1, arg);
+    }
+    case robotAction::MOVE_BACKWARD_TIME:{
+      uint16_t arg2 = static_cast<uint16_t>(pinRobotCharacteristic[2]);
+      uint16_t ms =  static_cast<uint16_t>(arg1) << 8 | arg2;
+      if (Serial) {
+        Serial.print("ms=");
+        Serial.println(ms);
+      }
+      myra.moveBackward(1, ms);
       break;
+    }
   }
 }
 

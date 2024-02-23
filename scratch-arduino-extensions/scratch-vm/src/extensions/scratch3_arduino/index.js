@@ -224,30 +224,29 @@ class IncludeRobot {
     }
     moveForwardTime(args) {
         let seconds = Cast.toNumber(args.SECONDS);
-        return DEVICE.moveForwardTime(seconds);
+        let ms = Math.floor(seconds * 1000);
+        return DEVICE.moveForwardTime(ms);
     }
     moveBackwardTime(args) {
         let seconds = Cast.toNumber(args.SECONDS);
-        return DEVICE.moveBackwardTime(seconds);
+        let ms = Math.floor(seconds * 1000);
+        return DEVICE.moveBackwardTime(ms);
     }
     turnLeft(args) {
-        // let seconds = Cast.toNumber(args.SECONDS);
-        // let ms = seconds * 1000;
-        let ms = args.SECONDS;
-        console.log("left", ms, "ms");
+        let seconds = Cast.toNumber(args.SECONDS);
+        let ms = Math.floor(seconds * 1000);
         return DEVICE.turnLeft(ms)
     }
     turnRight(args) {
-        // let seconds = Cast.toNumber(args.SECONDS);
-        // let ms = seconds * 1000;
-        let ms = args.SECONDS;
-        console.log("rigth", ms, "ms");
+        let seconds = Cast.toNumber(args.SECONDS);
+        let ms = Math.floor(seconds * 1000);
         return DEVICE.turnRight(ms)
     }
     setSpeed(args) {
         let speed = Cast.toNumber(args.SPEED);
         return DEVICE.setSpeed(speed);
     }
+
 
 }
 
