@@ -486,6 +486,7 @@ class ArduinoPeripheral {
 
         return this._send(BLECommand.PIN_ACTIONS, pinAction);
     }
+
     moveForward(steps) {
         const robotAction = [
             ROBOT_ACTIONS.MOVE_FORWARD,
@@ -493,6 +494,7 @@ class ArduinoPeripheral {
         ];
         return this._send(BLECommand.ROBOT_ACTIONS, robotAction);
     }
+
     moveBackward(steps) {
         const robotAction = [
             ROBOT_ACTIONS.MOVE_BACKWARD,

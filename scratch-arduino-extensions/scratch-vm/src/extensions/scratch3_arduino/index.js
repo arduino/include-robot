@@ -214,34 +214,41 @@ class IncludeRobot {
             menus: {}
         };
     }
+
     moveForward(args) {
         let steps = Cast.toNumber(args.STEPS);
         return DEVICE.moveForward(steps);
     }
+
     moveBackward(args) {
         let steps = Cast.toNumber(args.STEPS);
         return DEVICE.moveBackward(steps);
     }
+
     moveForwardTime(args) {
         let seconds = Cast.toNumber(args.SECONDS);
         let ms = Math.floor(seconds * 1000);
         return DEVICE.moveForwardTime(ms);
     }
+
     moveBackwardTime(args) {
         let seconds = Cast.toNumber(args.SECONDS);
         let ms = Math.floor(seconds * 1000);
         return DEVICE.moveBackwardTime(ms);
     }
+
     turnLeft(args) {
         let seconds = Cast.toNumber(args.SECONDS);
         let ms = Math.floor(seconds * 1000);
         return DEVICE.turnLeft(ms)
     }
+
     turnRight(args) {
         let seconds = Cast.toNumber(args.SECONDS);
         let ms = Math.floor(seconds * 1000);
         return DEVICE.turnRight(ms)
     }
+
     setSpeed(args) {
         let speed = Cast.toNumber(args.SPEED);
         return DEVICE.setSpeed(speed);
