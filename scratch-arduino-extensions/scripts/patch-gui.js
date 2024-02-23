@@ -13,6 +13,24 @@ const VmVirtualMachineFile = path.resolve(GuiDir, './node_modules/scratch-vm/src
 const VmExtArduinoDir = path.resolve(GuiDir, "./node_modules/scratch-vm/src/extensions/", ExtDirName);
 
 
+
+const EditorMessagesDir = path.resolve(GuiDir, "./node_modules/scratch-l10n/locales/editor-msgs.js");
+
+let replacementList = {
+    "IncludeRobot.moveBackward": "vai avanti [STEPS] passi",
+};
+
+
+let editMessages = fs.readFileSync(EditorMessagesDir, 'utf-8');
+fs.copyFileSync(EditorMessagesDir, `${EditorMessagesDir}.orig`);
+
+let  replacementString = JSON.stringify(replacementList, null, 2);
+replacementString = replacementString.replace(/(})\s*$/, ',');
+let modifiedContent = editMessages.replace(/("ciao":\s*{\s*)/, `"ciao":${replacementString}`);
+fs.writeFileSync(EditorMessagesDir, modifiedContent);
+console.log(`Add messages: ${replacementList}`);
+
+
 if (!fs.existsSync(VmExtArduinoDir)) {
     fs.symlinkSync(ExtDirPath, VmExtArduinoDir, 'dir');
     console.log("Set symbolic link to", VmExtArduinoDir);
