@@ -9,7 +9,7 @@
 #define ARDUINO_NANO_BLE_SENSE_R2
 
 // when this is defined the board will print debug messages on serial
-#define DEBUG
+// #define DEBUG
 
 
 #if defined(ARDUINO_NANO_BLE_SENSE)
@@ -121,20 +121,20 @@ void setup() {
 
 #if defined(ARDUINO_NANO_BLE_SENSE)
   if (!APDS.begin()) {
-    printSerialMsg("Failled to initialized APDS!");
+    printSerialMsg("Failed to initialized APDS!");
     while (1)
       ;
   }
 
   if (!HTS.begin()) {
-    printSerialMsg("Failled to initialized HTS!");
+    printSerialMsg("Failed to initialized HTS!");
 
     while (1)
       ;
   }
 
   if (!BARO.begin()) {
-    printSerialMsg("Failled to initialized BARO!");
+    printSerialMsg("Failed to initialized BARO!");
 
     while (1)
       ;
@@ -143,19 +143,19 @@ void setup() {
 
 #if defined(ARDUINO_NANO_BLE_SENSE_R2)
   if (!APDS.begin()) {
-    printSerialMsg("Failled to initialized APDS!");
+    printSerialMsg("Failed to initialized APDS!");
     while (1)
       ;
   }
 
   if (!HS300x.begin()) {
-    printSerialMsg("Failled to initialized HTS!");
+    printSerialMsg("Failed to initialized HTS!");
     while (1)
       ;
   }
 
   if (!BARO.begin()) {
-    printSerialMsg("Failled to initialized BARO!");
+    printSerialMsg("Failed to initialized BARO!");
     while (1)
       ;
   }
@@ -165,7 +165,7 @@ void setup() {
 
   // All 3 variants have an IMU on it
   if (!IMU.begin()) {
-    printSerialMsg("Failled to initialized IMU!");
+    printSerialMsg("Failed to initialized IMU!");
 
     while (1)
       ;
@@ -177,7 +177,7 @@ void setup() {
   String userName(cfg, n);
 
   if (!BLE.begin()) {
-    printSerialMsg("Failled to initialized BLE!");
+    printSerialMsg("Failed to initialized BLE!");
     while (1)
       ;
   }
@@ -223,10 +223,6 @@ void setup() {
 
   BLE.advertise();
 
-  if (Serial) {
-    Serial.print("service = ");
-    Serial.println(BLE_SENSE_UUID("0000"));
-  }
   digitalWrite(LED_BUILTIN, HIGH);
 }
 
@@ -578,7 +574,7 @@ enum robotAction {
 };
 
 void onRobotActionCharacteristicWrite(BLEDevice central, BLECharacteristic characteristic) {
-  enum pinAction action = (enum pinAction)pinRobotCharacteristic[0];
+  robotAction action = static_cast<robotAction>(pinRobotCharacteristic[0]);
   uint8_t arg1 = pinRobotCharacteristic[1];
   if (Serial) {
     Serial.print("action=");
@@ -597,20 +593,12 @@ void onRobotActionCharacteristicWrite(BLEDevice central, BLECharacteristic chara
     case robotAction::TURN_LEFT:{
       uint16_t arg2 = static_cast<uint16_t>(pinRobotCharacteristic[2]);
       uint16_t ms =  static_cast<uint16_t>(arg1) << 8 | arg2;
-      if (Serial) {
-        Serial.print("ms=");
-        Serial.println(ms);
-      }
       myra.turnLeft(ms);
       break;
     }
     case robotAction::TURN_RIGHT:{
       uint16_t arg2 = static_cast<uint16_t>(pinRobotCharacteristic[2]);
       uint16_t ms =  static_cast<uint16_t>(arg1) << 8 | arg2;
-      if (Serial) {
-        Serial.print("ms=");
-        Serial.println(ms);
-      }
       myra.turnRight(ms);
       break;
     }
@@ -620,23 +608,14 @@ void onRobotActionCharacteristicWrite(BLEDevice central, BLECharacteristic chara
     case robotAction::MOVE_FORWARD_TIME:{
       uint16_t arg2 = static_cast<uint16_t>(pinRobotCharacteristic[2]);
       uint16_t ms =  static_cast<uint16_t>(arg1) << 8 | arg2;
-      if (Serial) {
-        Serial.print("ms=");
-        Serial.println(ms);
-      }
       myra.moveForward(1, ms);
       break;
     }
     case robotAction::MOVE_BACKWARD_TIME:{
       uint16_t arg2 = static_cast<uint16_t>(pinRobotCharacteristic[2]);
       uint16_t ms =  static_cast<uint16_t>(arg1) << 8 | arg2;
-      if (Serial) {
-        Serial.print("ms=");
-        Serial.println(ms);
-      }
       myra.moveBackward(1, ms);
       break;
     }
   }
 }
-
