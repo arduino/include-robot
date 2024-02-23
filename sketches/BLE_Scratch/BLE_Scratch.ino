@@ -122,6 +122,7 @@ void setup() {
 #if defined(ARDUINO_NANO_BLE_SENSE)
   if (!APDS.begin()) {
     printSerialMsg("Failed to initialized APDS!");
+
     while (1)
       ;
   }
@@ -144,18 +145,21 @@ void setup() {
 #if defined(ARDUINO_NANO_BLE_SENSE_R2)
   if (!APDS.begin()) {
     printSerialMsg("Failed to initialized APDS!");
+
     while (1)
       ;
   }
 
   if (!HS300x.begin()) {
     printSerialMsg("Failed to initialized HTS!");
+
     while (1)
       ;
   }
 
   if (!BARO.begin()) {
     printSerialMsg("Failed to initialized BARO!");
+
     while (1)
       ;
   }
@@ -178,6 +182,7 @@ void setup() {
 
   if (!BLE.begin()) {
     printSerialMsg("Failed to initialized BLE!");
+
     while (1)
       ;
   }
