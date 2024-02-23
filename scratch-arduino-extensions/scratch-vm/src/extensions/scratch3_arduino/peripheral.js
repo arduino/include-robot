@@ -1,6 +1,6 @@
 const BLE = require('../../io/ble');
 const Base64Util = require('../../util/base64-util');
-const {colorCorrector, roundToDecimalPlaces} = require('./utils');
+const {colorCorrector, roundToDecimalPlaces, convertUInt16ToBytes} = require('./utils');
 const log = require('../../util/log');
 
 /**
@@ -38,7 +38,7 @@ const BLECharacteristic = {
 const BLECommand = {
     RGB_LED: '6fbe1da7-6001-44de-92c4-bb6e04fb0212', // RGB led value, 0 => off, 255 => on
     PIN_ACTIONS: '6fbe1da7-6002-44de-92c4-bb6e04fb0212', // Array of 3 bytes, action + pinNumber + data
-    ROBOT_ACTIONS: '6fbe1da7-6003-44de-92c4-bb6e04fb0212' // Array of 2 bytes, action + data
+    ROBOT_ACTIONS: '6fbe1da7-6003-44de-92c4-bb6e04fb0212' // Array of 3 bytes, action (1 byte) + data (2 bytes)
 };
 
 
@@ -61,7 +61,7 @@ const ROBOT_ACTIONS = {
 };
 
 /**
- * Manage communication with a Arduino peripheral over a Scrath Link client socket.
+ * Manage communication with an Arduino peripheral over a Scratch Link client socket.
  */
 class ArduinoPeripheral {
     /**
@@ -630,19 +630,6 @@ class ArduinoPeripheral {
     getAnalogPinValue (pinNumber) {
         return this._pins.analog[pinNumber] || 0;
     }
-}
-
-
-function convertUInt16ToBytes(value) {
-    // Ensure value is within the range of 16-bit unsigned integer (0-65535)
-    value = Math.max(0, Math.min(0xFFFF, value));
-
-    // Extract the two bytes
-    let byte1 = (value >> 8) & 0x00FF; // Extract the higher 8 bits
-    let byte2 = value & 0x00FF; // Extract the lower 8 bits
-
-    // Return an array containing the two bytes
-    return [byte1, byte2];
 }
 
 
