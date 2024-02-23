@@ -247,7 +247,6 @@ class IncludeRobot {
         return DEVICE.setSpeed(speed);
     }
 
-
 }
 
 
