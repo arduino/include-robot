@@ -5,12 +5,11 @@
  * @return {number} - new rounded
  **/
 function roundToDecimalPlaces (value, decPlaces = 10){ // eslint-disable-line func-style
-    const newValue = (Math.round(value * decPlaces) / decPlaces);
-    return newValue;
+    return (Math.round(value * decPlaces) / decPlaces);
 }
 
 /**
- * @param {nuber} value - color value
+ * @param {number} value - color value
  * @return {number} - color value
  **/
 function colorCorrector (value) { // eslint-disable-line func-style
@@ -23,8 +22,22 @@ function colorCorrector (value) { // eslint-disable-line func-style
     return value;
 }
 
+function convertUInt16ToBytes(value) {
+    // Ensure value is within the range of 16-bit unsigned integer (0-65535)
+    value = Math.max(0, Math.min(0xFFFF, value));
+
+    // Extract the two bytes
+    let byte1 = (value >> 8) & 0x00FF; // Extract the higher 8 bits
+    let byte2 = value & 0x00FF; // Extract the lower 8 bits
+
+    // Return an array containing the two bytes
+    return [byte1, byte2];
+}
+
+
 
 module.exports = {
     roundToDecimalPlaces,
-    colorCorrector
+    colorCorrector,
+    convertUInt16ToBytes
 };

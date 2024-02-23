@@ -1,6 +1,6 @@
 const BLE = require('../../io/ble');
 const Base64Util = require('../../util/base64-util');
-const {colorCorrector, roundToDecimalPlaces} = require('./utils');
+const {colorCorrector, roundToDecimalPlaces, convertUInt16ToBytes} = require('./utils');
 const log = require('../../util/log');
 
 /**
@@ -37,7 +37,8 @@ const BLECharacteristic = {
  */
 const BLECommand = {
     RGB_LED: '6fbe1da7-6001-44de-92c4-bb6e04fb0212', // RGB led value, 0 => off, 255 => on
-    PIN_ACTIONS: '6fbe1da7-6002-44de-92c4-bb6e04fb0212' // Array of 3 bytes, action + pinNumber + data
+    PIN_ACTIONS: '6fbe1da7-6002-44de-92c4-bb6e04fb0212', // Array of 3 bytes, action + pinNumber + data
+    ROBOT_ACTIONS: '6fbe1da7-6003-44de-92c4-bb6e04fb0212' // Array of 3 bytes, action (1 byte) + data (2 bytes)
 };
 
 
@@ -49,8 +50,18 @@ const BLE_PIN_ACTIONS = {
     SERVOSTOP: 7
 };
 
+const ROBOT_ACTIONS = {
+    MOVE_FORWARD: 0,
+    MOVE_BACKWARD: 1,
+    TURN_RIGTH: 2,
+    TURN_LEFT: 3,
+    SET_SPEED: 4,
+    MOVE_FORWARD_TIME: 5,
+    MOVE_BACKWARD_TIME: 6,
+};
+
 /**
- * Manage communication with a Arduino peripheral over a Scrath Link client socket.
+ * Manage communication with an Arduino peripheral over a Scratch Link client socket.
  */
 class ArduinoPeripheral {
     /**
@@ -474,6 +485,70 @@ class ArduinoPeripheral {
         ];
 
         return this._send(BLECommand.PIN_ACTIONS, pinAction);
+    }
+
+    moveForward(steps) {
+        const robotAction = [
+            ROBOT_ACTIONS.MOVE_FORWARD,
+            steps
+        ];
+        return this._send(BLECommand.ROBOT_ACTIONS, robotAction);
+    }
+
+    moveBackward(steps) {
+        const robotAction = [
+            ROBOT_ACTIONS.MOVE_BACKWARD,
+            steps
+        ];
+        return this._send(BLECommand.ROBOT_ACTIONS, robotAction);
+    }
+
+    moveForwardTime(milliseconds) {
+        let [arg0, arg1] = convertUInt16ToBytes(milliseconds);
+        const robotAction = [
+            ROBOT_ACTIONS.MOVE_FORWARD_TIME,
+            arg0,
+            arg1
+        ];
+        return this._send(BLECommand.ROBOT_ACTIONS, robotAction);
+    }
+
+    moveBackwardTime(milliseconds) {
+        let [arg0, arg1] = convertUInt16ToBytes(milliseconds);
+        const robotAction = [
+            ROBOT_ACTIONS.MOVE_BACKWARD_TIME,
+            arg0,
+            arg1
+        ];
+        return this._send(BLECommand.ROBOT_ACTIONS, robotAction);
+    }
+
+    turnLeft(milliseconds) {
+        let [arg0, arg1] = convertUInt16ToBytes(milliseconds);
+        const robotAction = [
+            ROBOT_ACTIONS.TURN_LEFT,
+            arg0,
+            arg1
+        ];
+        return this._send(BLECommand.ROBOT_ACTIONS, robotAction);
+    }
+
+    turnRight(milliseconds){
+        let [arg0, arg1] = convertUInt16ToBytes(milliseconds);
+        const robotAction = [
+            ROBOT_ACTIONS.TURN_RIGTH,
+            arg0,
+            arg1
+        ];
+        return this._send(BLECommand.ROBOT_ACTIONS, robotAction);
+    }
+
+    setSpeed(speed) {
+        const robotAction = [
+            ROBOT_ACTIONS.SET_SPEED,
+            speed
+        ];
+        return this._send(BLECommand.ROBOT_ACTIONS, robotAction);
     }
 
     /**

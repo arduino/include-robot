@@ -4,14 +4,12 @@
 
 // Uncomment one of these defines to select which board you are using
 
-#define ARDUINO_NANO_BLE_SENSE
+//#define ARDUINO_NANO_BLE_SENSE
 //#define ARDUINO_NANO_BLE
-//#define ARDUINO_NANO_BLE_SENSE_R2
+#define ARDUINO_NANO_BLE_SENSE_R2
 
 // when this is defined the board will print debug messages on serial
-//#define DEBUG
-
-
+// #define DEBUG
 
 
 #if defined(ARDUINO_NANO_BLE_SENSE)
@@ -32,7 +30,7 @@
 #include <Arduino_LSM9DS1.h>
 #endif
 
-
+#include "robot.h"
 #include <Servo.h>
 #include <ArduinoBLE.h>
 
@@ -43,12 +41,19 @@ const uint8_t HEADER[] = { 0x8a, 0x48, 0x92, 0xdf, 0xaa, 0x69, 0x5c, 0x41 };
 const uint8_t MAGIC = 0x7F;
 const uint8_t MEMORY_SIZE = 256000;
 
+// TODO: the pin of the wheels could be obtained during the setup
+const int ROBOT_LEFT_WHEEL = 3;
+const int ROBOT_RIGHT_WHEEL = 4;
+
+Robot myra = Robot(ROBOT_RIGHT_WHEEL, ROBOT_LEFT_WHEEL);
+
 BLEService service(BLE_SENSE_UUID("0000"));
 BLEUnsignedIntCharacteristic versionCharacteristic(BLE_SENSE_UUID("1001"), BLERead);
 
 BLECharacteristic sensorsData(BLE_SENSE_UUID("1010"), BLENotify, 16 * sizeof(float));                     // first element it's type and data
 BLECharacteristic rgbLedCharacteristic(BLE_SENSE_UUID("6001"), BLEWrite, 3 * sizeof(byte));               // Array of 3 bytes, RGB
 BLECharacteristic pinActionCharacteristic(BLE_SENSE_UUID("6002"), BLERead | BLEWrite, 4 * sizeof(byte));  // Array of 3 bytes, action + pinNumber + data
+BLECharacteristic pinRobotCharacteristic(BLE_SENSE_UUID("6003"), BLEWrite, 3 * sizeof(byte));             // Array of 3 bytes, 1 byte action + 2 bytes for data
 
 // String to calculate the local and device name
 String name;
@@ -116,20 +121,21 @@ void setup() {
 
 #if defined(ARDUINO_NANO_BLE_SENSE)
   if (!APDS.begin()) {
-    printSerialMsg("Failled to initialized APDS!");
+    printSerialMsg("Failed to initialized APDS!");
+
     while (1)
       ;
   }
 
   if (!HTS.begin()) {
-    printSerialMsg("Failled to initialized HTS!");
+    printSerialMsg("Failed to initialized HTS!");
 
     while (1)
       ;
   }
 
   if (!BARO.begin()) {
-    printSerialMsg("Failled to initialized BARO!");
+    printSerialMsg("Failed to initialized BARO!");
 
     while (1)
       ;
@@ -138,19 +144,22 @@ void setup() {
 
 #if defined(ARDUINO_NANO_BLE_SENSE_R2)
   if (!APDS.begin()) {
-    printSerialMsg("Failled to initialized APDS!");
+    printSerialMsg("Failed to initialized APDS!");
+
     while (1)
       ;
   }
 
   if (!HS300x.begin()) {
-    printSerialMsg("Failled to initialized HTS!");
+    printSerialMsg("Failed to initialized HTS!");
+
     while (1)
       ;
   }
 
   if (!BARO.begin()) {
-    printSerialMsg("Failled to initialized BARO!");
+    printSerialMsg("Failed to initialized BARO!");
+
     while (1)
       ;
   }
@@ -160,7 +169,7 @@ void setup() {
 
   // All 3 variants have an IMU on it
   if (!IMU.begin()) {
-    printSerialMsg("Failled to initialized IMU!");
+    printSerialMsg("Failed to initialized IMU!");
 
     while (1)
       ;
@@ -172,7 +181,7 @@ void setup() {
   String userName(cfg, n);
 
   if (!BLE.begin()) {
-    printSerialMsg("Failled to initialized BLE!");
+    printSerialMsg("Failed to initialized BLE!");
 
     while (1)
       ;
@@ -208,10 +217,12 @@ void setup() {
   service.addCharacteristic(sensorsData);
   service.addCharacteristic(rgbLedCharacteristic);
   service.addCharacteristic(pinActionCharacteristic);
+  service.addCharacteristic(pinRobotCharacteristic);
 
   versionCharacteristic.setValue(VERSION);
   rgbLedCharacteristic.setEventHandler(BLEWritten, onRgbLedCharacteristicWrite);
   pinActionCharacteristic.setEventHandler(BLEWritten, onPinActionCharacteristicWrite);
+  pinRobotCharacteristic.setEventHandler(BLEWritten, onRobotActionCharacteristicWrite);
 
   BLE.addService(service);
 
@@ -411,7 +422,7 @@ enum pinAction {
   ANALOGWRITE = 4,
   SERVOWRITE = 5,
   SERVOWRITE_AND_INITIALIZE = 6,
-  SERVOSTOP
+  SERVOSTOP = 7,
 };
 
 static const int SERVO = 0x4;
@@ -554,5 +565,66 @@ void setLedPinValue(int pin, int value) {
     analogWrite(pin, 256);
   } else {
     analogWrite(pin, 255 - value);
+  }
+}
+
+enum robotAction {
+  MOVE_FORWARD_STEP = 0,
+  MOVE_BACKWARD_STEP = 1,
+  TURN_RIGHT = 2,
+  TURN_LEFT = 3,
+  SET_SPEED = 4,
+  MOVE_FORWARD_TIME = 5,
+  MOVE_BACKWARD_TIME = 6,
+};
+
+void onRobotActionCharacteristicWrite(BLEDevice central, BLECharacteristic characteristic) {
+  robotAction action = static_cast<robotAction>(pinRobotCharacteristic[0]);
+  uint8_t arg1 = pinRobotCharacteristic[1];
+  if (Serial) {
+    Serial.print("action=");
+    Serial.println(action);
+    Serial.print("arg1=");
+    Serial.println(arg1);
+  }
+
+  switch (action) {
+    case robotAction::MOVE_FORWARD_STEP:
+      myra.moveForward(arg1, 1000);
+      break;
+    case robotAction::MOVE_BACKWARD_STEP:
+      myra.moveBackward(arg1, 1000);
+      break;
+    case robotAction::TURN_LEFT:
+      {
+        uint16_t arg2 = static_cast<uint16_t>(pinRobotCharacteristic[2]);
+        uint16_t ms = static_cast<uint16_t>(arg1) << 8 | arg2;
+        myra.turnLeft(ms);
+        break;
+      }
+    case robotAction::TURN_RIGHT:
+      {
+        uint16_t arg2 = static_cast<uint16_t>(pinRobotCharacteristic[2]);
+        uint16_t ms = static_cast<uint16_t>(arg1) << 8 | arg2;
+        myra.turnRight(ms);
+        break;
+      }
+    case robotAction::SET_SPEED:
+      myra.setSpeed(arg1);
+      break;
+    case robotAction::MOVE_FORWARD_TIME:
+      {
+        uint16_t arg2 = static_cast<uint16_t>(pinRobotCharacteristic[2]);
+        uint16_t ms = static_cast<uint16_t>(arg1) << 8 | arg2;
+        myra.moveForward(1, ms);
+        break;
+      }
+    case robotAction::MOVE_BACKWARD_TIME:
+      {
+        uint16_t arg2 = static_cast<uint16_t>(pinRobotCharacteristic[2]);
+        uint16_t ms = static_cast<uint16_t>(arg1) << 8 | arg2;
+        myra.moveBackward(1, ms);
+        break;
+      }
   }
 }
