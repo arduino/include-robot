@@ -135,17 +135,47 @@ class IncludeRobot {
                     }
                 },
                 {
+                    opcode: 'moveForwardTime',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'IncludeRobot.moveForwardTime',
+                        default: 'Go forward for [SECONDS] seconds',
+                        description: 'go forward for a given amount of seconds (max 10 seconds).'
+                    }),
+                    arguments: {
+                        SECONDS: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: '1'
+                        }
+                    }
+                },
+                {
+                    opcode: 'moveBackwardTime',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'IncludeRobot.moveBackwardTime',
+                        default: 'Go backward for [SECONDS] seconds',
+                        description: 'go backward for a given amount of seconds (max 10 seconds).'
+                    }),
+                    arguments: {
+                        SECONDS: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: '1'
+                        }
+                    }
+                },
+                {
                     opcode: 'turnLeft',
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
                         id: 'IncludeRobot.turnLeft',
-                        default: 'Turn left [DEGREE] degree',
+                        default: 'Turn left for [SECONDS] seconds',
                         description: 'Turn left of degree.'
                     }),
                     arguments: {
-                        DEGREE: {
-                            type: ArgumentType.ANGLE,
-                            defaultValue: '90'
+                        SECONDS: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 0.7
                         }
                     }
                 },
@@ -154,13 +184,13 @@ class IncludeRobot {
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
                         id: 'IncludeRobot.turnRight',
-                        default: 'Turn right [DEGREE] degree',
+                        default: 'Turn right for [SECONDS] seconds',
                         description: 'Turn right of degree.'
                     }),
                     arguments: {
-                        DEGREE: {
-                            type: ArgumentType.ANGLE,
-                            defaultValue: '90'
+                        SECONDS: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 0.7
                         }
                     }
                 },
@@ -184,29 +214,36 @@ class IncludeRobot {
             menus: {}
         };
     }
-
     moveForward(args) {
         let steps = Cast.toNumber(args.STEPS);
         return DEVICE.moveForward(steps);
     }
-
     moveBackward(args) {
         let steps = Cast.toNumber(args.STEPS);
         return DEVICE.moveBackward(steps);
     }
-
+    moveForwardTime(args) {
+        let seconds = Cast.toNumber(args.SECONDS);
+        return DEVICE.moveForwardTime(seconds);
+    }
+    moveBackwardTime(args) {
+        let seconds = Cast.toNumber(args.SECONDS);
+        return DEVICE.moveBackwardTime(seconds);
+    }
     turnLeft(args) {
-        let degree = Cast.toNumber(args.DEGREE);
-        degree = Math.max(360, Math.min(0, degree));
-        return DEVICE.turnLeft(degree)
+        // let seconds = Cast.toNumber(args.SECONDS);
+        // let ms = seconds * 1000;
+        let ms = args.SECONDS;
+        console.log("left", ms, "ms");
+        return DEVICE.turnLeft(ms)
     }
-
     turnRight(args) {
-        let degree = Cast.toNumber(args.DEGREE);
-        degree = Math.max(360, Math.min(0, degree));
-        return DEVICE.turnRight(degree)
+        // let seconds = Cast.toNumber(args.SECONDS);
+        // let ms = seconds * 1000;
+        let ms = args.SECONDS;
+        console.log("rigth", ms, "ms");
+        return DEVICE.turnRight(ms)
     }
-
     setSpeed(args) {
         let speed = Cast.toNumber(args.SPEED);
         return DEVICE.setSpeed(speed);

@@ -9,7 +9,7 @@
 #define ARDUINO_NANO_BLE_SENSE_R2
 
 // when this is defined the board will print debug messages on serial
-// #define DEBUG
+#define DEBUG
 
 
 #if defined(ARDUINO_NANO_BLE_SENSE)
@@ -41,7 +41,7 @@ const uint8_t HEADER[] = { 0x8a, 0x48, 0x92, 0xdf, 0xaa, 0x69, 0x5c, 0x41 };
 const uint8_t MAGIC = 0x7F;
 const uint8_t MEMORY_SIZE = 256000;
 
-// FIXME: the pin of the wheels could be obatined 
+// TODO: the pin of the wheels could be obtained during the setup
 const int ROBOT_LEFT_WHEEL = 3;
 const int ROBOT_RIGHT_WHEEL = 4;
 
@@ -223,6 +223,10 @@ void setup() {
 
   BLE.advertise();
 
+  if (Serial) {
+    Serial.print("service = ");
+    Serial.println(BLE_SENSE_UUID("0000"));
+  }
   digitalWrite(LED_BUILTIN, HIGH);
 }
 
@@ -420,14 +424,6 @@ enum pinAction {
   SERVOSTOP = 7,
 };
 
-enum robotAction {
-  MOVE_FORWARD = 0,
-  MOVE_BACKWARD = 1,
-  TURN_RIGHT = 2,
-  TURN_LEFT = 3,
-  SET_SPEED = 4,
-};
-
 static const int SERVO = 0x4;
 
 typedef struct WrapServo {
@@ -571,6 +567,16 @@ void setLedPinValue(int pin, int value) {
   }
 }
 
+enum robotAction {
+  MOVE_FORWARD_STEP = 0,
+  MOVE_BACKWARD_STEP = 1,
+  TURN_RIGHT = 2,
+  TURN_LEFT = 3,
+  SET_SPEED = 4,
+  MOVE_FORWARD_TIME = 5,
+  MOVE_BACKWARD_TIME = 6,
+};
+
 void onRobotActionCharacteristicWrite(BLEDevice central, BLECharacteristic characteristic) {
   enum pinAction action = (enum pinAction)pinRobotCharacteristic[0];
   int8_t arg = pinRobotCharacteristic[1];
@@ -583,21 +589,27 @@ void onRobotActionCharacteristicWrite(BLEDevice central, BLECharacteristic chara
   }
 
   switch (action) {
-    case robotAction::MOVE_FORWARD:
-      myra.moveForward(arg);
+    case robotAction::MOVE_FORWARD_STEP:
+      myra.moveForward(arg, 1);
       break;
-    case robotAction::MOVE_BACKWARD:
-      myra.moveBackward(arg);
+    case robotAction::MOVE_BACKWARD_STEP:
+      myra.moveBackward(arg, 1);
       break;
     case robotAction::TURN_LEFT:
-      myra.turnLeft();
+      myra.turnLeft(arg);
       break;
     case robotAction::TURN_RIGHT:
-      myra.turnRight();
+      myra.turnRight(arg);
       break;
     case robotAction::SET_SPEED:
       myra.setSpeed(arg);
-      break;  
+      break;
+    case robotAction::MOVE_FORWARD_TIME:
+      myra.moveForward(1, arg);
+      break;
+    case robotAction::MOVE_BACKWARD_TIME:
+      myra.moveBackward(1, arg);
+      break;
   }
 }
 

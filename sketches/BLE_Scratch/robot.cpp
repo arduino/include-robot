@@ -9,44 +9,48 @@ Robot::Robot(int rightWheelPin, int leftWheelPin) {
   this->setSpeed(10);
 }
 
-void Robot::moveForward(int steps) {
+void Robot::moveForward(const int steps, const int step_duration_seconds) {
+  int step_duration_ms = constrain(step_duration_seconds, 0, 255);
   for (int i = 0; i < steps; i++) {
     this->rightWheel.write(90 + this->speed);
-    leftWheel.write(90 - this->speed);
-    delay(1000);
+    this->leftWheel.write(90 - this->speed);
+    delay(step_duration_ms * 1000);
     this->rightWheel.write(90);
     this->leftWheel.write(90);
     delay(500);
   }
 }
 
-void Robot::moveBackward(int steps) {
+void Robot::moveBackward(const int steps, const int step_duration_seconds) {
+  int step_duration_ms = constrain(step_duration_seconds, 0, 255);
   for (int i = 0; i < steps; i++) {
     this->rightWheel.write(90 - this->speed);
     this->leftWheel.write(90 + this->speed);
-    delay(1000);
+    delay(step_duration_ms * 1000);
     this->rightWheel.write(90);
     this->leftWheel.write(90);
     delay(500);
   }
 }
 
-void Robot::turnRight() {
+void Robot::turnRight(const int for_ms) {
+    int ms = constrain(for_ms, 0, 10000);
     this->rightWheel.write(90 + 10);
     this->leftWheel.write(90 + 10);
-    // FIXME: the delay should be correlated with the speed. Another approach is to use the compass
-    delay(700);
+    delay(ms);
     this->rightWheel.write(90);
     this->leftWheel.write(90);
 }
 
-void Robot::turnLeft() {
+void Robot::turnLeft(const int for_ms) {
+    int ms = constrain(for_ms, 0, 10000); 
     this->rightWheel.write(90 - 10);
     this->leftWheel.write(90 - 10);
-    delay(700);
+    delay(ms);
     this->rightWheel.write(90);
     this->leftWheel.write(90);
 }
+
 // set the speed of the robot. From 0 (no speed) to 100 (max speed)
 void Robot::setSpeed(int speed) {
     speed = constrain(speed, 0, 100);

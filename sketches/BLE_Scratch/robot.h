@@ -11,10 +11,9 @@ private:
 
 public:
   Robot(int rightWheelPin, int leftWheelPin);
-  void setSpeed(const int speed);  
-  void moveForward(const int steps);
-  void moveBackward(const int steps);
-  void turnRight();
-  void turnLeft();
-
+  void setSpeed(const int steps);
+  void moveForward(const int steps, const int step_duration_seconds);
+  void moveBackward(const int steps, const int step_duration_seconds);
+  void turnRight(const int for_ms);
+  void turnLeft(const int for_ms);
 };

@@ -56,6 +56,8 @@ const ROBOT_ACTIONS = {
     TURN_RIGTH: 2,
     TURN_LEFT: 3,
     SET_SPEED: 4,
+    MOVE_FORWARD_TIME: 5,
+    MOVE_BACKWARD_TIME: 6,
 };
 
 /**
@@ -484,7 +486,6 @@ class ArduinoPeripheral {
 
         return this._send(BLECommand.PIN_ACTIONS, pinAction);
     }
-
     moveForward(steps) {
         const robotAction = [
             ROBOT_ACTIONS.MOVE_FORWARD,
@@ -492,27 +493,40 @@ class ArduinoPeripheral {
         ];
         return this._send(BLECommand.ROBOT_ACTIONS, robotAction);
     }
-
     moveBackward(steps) {
+
         const robotAction = [
             ROBOT_ACTIONS.MOVE_BACKWARD,
             steps
         ];
         return this._send(BLECommand.ROBOT_ACTIONS, robotAction);
     }
-
-    turnLeft(degrees) {
+    moveForwardTime(seconds) {
         const robotAction = [
-            ROBOT_ACTIONS.TURN_LEFT,
-            degrees
+            ROBOT_ACTIONS.MOVE_FORWARD_TIME,
+            seconds
         ];
         return this._send(BLECommand.ROBOT_ACTIONS, robotAction);
     }
 
-    turnRight(degrees) {
+    moveBackwardTime(seconds) {
+        const robotAction = [
+            ROBOT_ACTIONS.MOVE_BACKWARD_TIME,
+            seconds
+        ];
+        return this._send(BLECommand.ROBOT_ACTIONS, robotAction);
+    }
+    turnLeft(ms) {
+        const robotAction = [
+            ROBOT_ACTIONS.TURN_LEFT,
+            ms
+        ];
+        return this._send(BLECommand.ROBOT_ACTIONS, robotAction);
+    }
+    turnRight(ms) {
         const robotAction = [
             ROBOT_ACTIONS.TURN_RIGTH,
-            degrees
+            ms
         ];
         return this._send(BLECommand.ROBOT_ACTIONS, robotAction);
     }
