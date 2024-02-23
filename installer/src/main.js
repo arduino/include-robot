@@ -1,5 +1,6 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
+const fs = require('fs');
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -22,6 +23,13 @@ const createWindow = () => {
   } else {
     mainWindow.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`));
   }
+
+  try{
+  const data = fs.readFileSync("./assets/BLE_Scratch.ino.bin", 'binary');
+  console.log("lenght:", data.length);
+} catch (err) {
+  console.error(err);
+  }  
 
   // Open the DevTools.
   mainWindow.webContents.openDevTools();

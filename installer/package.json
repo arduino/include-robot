@@ -22,7 +22,8 @@
     "@electron-forge/plugin-vite": "^7.3.0",
     "@electron/fuses": "^1.7.0",
     "electron": "29.0.1",
-    "vite": "^5.1.4"
+    "vite": "^5.1.4",
+    "vite-plugin-copy": "^0.1.6"
   },
   "keywords": [],
   "author": {

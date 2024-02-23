@@ -1,4 +1,5 @@
 import { defineConfig, mergeConfig } from 'vite';
+import { copy } from 'vite-plugin-copy'
 import {
   getBuildConfig,
   getBuildDefine,
@@ -23,7 +24,10 @@ export default defineConfig((env) => {
         external,
       },
     },
-    plugins: [pluginHotRestart('restart')],
+    plugins: [
+      pluginHotRestart('restart'),
+      copy({ targets: [{ src: './assets/*', dest: 'dist/assets' }] })
+    ],
     define,
     resolve: {
       // Load the Node.js entry.
