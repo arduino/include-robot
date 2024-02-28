@@ -14,8 +14,6 @@ const VmExtArduinoDir = path.resolve(GuiDir, "./node_modules/scratch-vm/src/exte
 const EditorMessagesDir = path.resolve(GuiDir, "./node_modules/scratch-l10n/locales/editor-msgs.js");
 
 
-
-
 if (!fs.existsSync(VmExtArduinoDir)) {
     fs.symlinkSync(ExtDirPath, VmExtArduinoDir, 'dir');
     console.log("Set symbolic link to", VmExtArduinoDir);
@@ -48,28 +46,22 @@ for (const ExtId of ExtIds) {
     }
 }
 
-// Define the replacement list
-let replacementList = {
-    "IncludeRobot.moveForward": "Vai avanti di [STEPS] passi",
-    "IncludeRobot.moveBackward": "Vai indietro di [STEPS] passi",
-    "IncludeRobot.moveForwardTime": "Vai avanti per [SECONDS] secondi",
-    "IncludeRobot.moveBackwardTime": "Vai indietro per [SECONDS] secondi",
-    "IncludeRobot.turnLeft": "Gira a sinistra per [SECONDS] secondi",
-    "IncludeRobot.turnRight": "Gira a destra per [SECONDS] secondi",
-    "IncludeRobot.setSpeed": "Imposta velocià al [SPEED] %",
-};
 
+
+let replacementListPath = path.join(__dirname, 'include-msgs.json');
+let includeMsgs = JSON.parse(fs.readFileSync(replacementListPath, 'utf8'));
 
 let fileContent = fs.readFileSync(EditorMessagesDir, 'utf8');
 let match = fileContent.match(/export default (\{.*\});/s);
 if (!match) {
     throw new Error('Could not find object in file');
 }
-// Use eval to convert the string to an object
 let obj = eval('(' + match[1] + ')');
-for (let key in replacementList) {
-    obj['it'][key] = replacementList[key];
+for (let lang in includeMsgs) {
+    console.log(`Adding "${lang}" translation`);
+    for (let key in includeMsgs[lang]) {
+        obj[lang][key] = includeMsgs[lang][key];
+    }
 }
 let updatedContent = 'export default ' + JSON.stringify(obj, null, 2) + ';';
 fs.writeFileSync(EditorMessagesDir, updatedContent);
-console.log(`Add block translation`);
