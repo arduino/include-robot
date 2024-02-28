@@ -11,24 +11,9 @@ const GuiDir = path.resolve(BaseDir, "../scratch-gui");
 const VmExtManagerFile = path.resolve(GuiDir, './node_modules/scratch-vm/src/extension-support/extension-manager.js');
 const VmVirtualMachineFile = path.resolve(GuiDir, './node_modules/scratch-vm/src/virtual-machine.js');
 const VmExtArduinoDir = path.resolve(GuiDir, "./node_modules/scratch-vm/src/extensions/", ExtDirName);
-
-
-
 const EditorMessagesDir = path.resolve(GuiDir, "./node_modules/scratch-l10n/locales/editor-msgs.js");
 
-let replacementList = {
-    "IncludeRobot.moveBackward": "vai avanti [STEPS] passi",
-};
 
-
-let editMessages = fs.readFileSync(EditorMessagesDir, 'utf-8');
-fs.copyFileSync(EditorMessagesDir, `${EditorMessagesDir}.orig`);
-
-let  replacementString = JSON.stringify(replacementList, null, 2);
-replacementString = replacementString.replace(/(})\s*$/, ',');
-let modifiedContent = editMessages.replace(/("ciao":\s*{\s*)/, `"ciao":${replacementString}`);
-fs.writeFileSync(EditorMessagesDir, modifiedContent);
-console.log(`Add messages: ${replacementList}`);
 
 
 if (!fs.existsSync(VmExtArduinoDir)) {
@@ -63,3 +48,28 @@ for (const ExtId of ExtIds) {
     }
 }
 
+// Define the replacement list
+let replacementList = {
+    "IncludeRobot.moveForward": "Vai avanti di [STEPS] passi",
+    "IncludeRobot.moveBackward": "Vai indietro di [STEPS] passi",
+    "IncludeRobot.moveForwardTime": "Vai avanti per [SECONDS] secondi",
+    "IncludeRobot.moveBackwardTime": "Vai indietro per [SECONDS] secondi",
+    "IncludeRobot.turnLeft": "Gira a sinistra per [SECONDS] secondi",
+    "IncludeRobot.turnRight": "Gira a destra per [SECONDS] secondi",
+    "IncludeRobot.setSpeed": "Imposta velocià al [SPEED] %",
+};
+
+
+let fileContent = fs.readFileSync(EditorMessagesDir, 'utf8');
+let match = fileContent.match(/export default (\{.*\});/s);
+if (!match) {
+    throw new Error('Could not find object in file');
+}
+// Use eval to convert the string to an object
+let obj = eval('(' + match[1] + ')');
+for (let key in replacementList) {
+    obj['it'][key] = replacementList[key];
+}
+let updatedContent = 'export default ' + JSON.stringify(obj, null, 2) + ';';
+fs.writeFileSync(EditorMessagesDir, updatedContent);
+console.log(`Add block translation`);
