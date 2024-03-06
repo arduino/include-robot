@@ -91,7 +91,7 @@ uint32_t get_config_bytes(uint8_t *buff, const uint32_t n) {
   while (1) {
     auto found = search_in_mem(addr, MEMORY_SIZE, HEADER, sizeof(HEADER));
     if (found == -1) {
-      printSerialMsg("config header not founded");
+      printSerialMsg("config header not found");
       return 0;
     }
     printSerialMsg("config header founded");
