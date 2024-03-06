@@ -39,7 +39,7 @@
 const int VERSION = 0x00000000;
 const uint8_t HEADER[] = { 0x8a, 0x48, 0x92, 0xdf, 0xaa, 0x69, 0x5c, 0x41 };
 const uint8_t MAGIC = 0x7F;
-const uint8_t MEMORY_SIZE = 256000;
+const uint32_t MEMORY_SIZE = 0x80000;  // 512KB
 
 // TODO: the pin of the wheels could be obtained during the setup
 const int ROBOT_LEFT_WHEEL = 3;
@@ -72,22 +72,25 @@ void printSerialMsg(const char *msg) {
 }
 
 uint32_t get_config_bytes(uint8_t *buff, const uint32_t n) {
-  auto search_in_mem = [](const uint32_t start, const uint32_t end, const uint8_t *buff, const int size) -> uint32_t {
-    for (int i = 0; i <= end - size; i++) {
-      auto p = start + i;
-      if (memcmp(reinterpret_cast<const void *>(p), buff, size) == 0) {
-        return p;
+  auto search_in_mem = [](const uint32_t start, const uint32_t end, const uint8_t *buff, const int size) -> int32_t {
+    if (start >= end || size <= 0) {
+      return -1;
+    }
+
+    for (int i = start; i <= end - size; i++) {
+      if (memcmp(reinterpret_cast<const void *>(i), buff, size) == 0) {
+        return i;
       }
     }
 
-    return 0;
+    return -1;
   };
 
   uint32_t addr = 0;
 
   while (1) {
     auto found = search_in_mem(addr, MEMORY_SIZE, HEADER, sizeof(HEADER));
-    if (found == 0) {
+    if (found == -1) {
       printSerialMsg("config header not founded");
       return 0;
     }
