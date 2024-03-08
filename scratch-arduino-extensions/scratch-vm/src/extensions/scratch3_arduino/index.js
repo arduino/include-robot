@@ -107,6 +107,21 @@ class IncludeRobot {
 
       blocks: [
         {
+            opcode: "whenObstacle",
+            text: formatMessage({
+              id: "IncludeRobot.whenObstacle",
+              default: "When an obstable is near [DISTANCE] cm",
+              description: "check when an obstacle is near.",
+            }),
+            blockType: BlockType.HAT,
+            arguments: {
+                DISTANCE: {
+                type: ArgumentType.NUMBER,
+                defaultValue: 0,
+              },
+            },
+          },
+        {
           opcode: "moveForward",
           blockType: BlockType.COMMAND,
           text: formatMessage({
@@ -217,6 +232,15 @@ class IncludeRobot {
 
       menus: {},
     };
+  }
+
+  whenObstacle(args) {
+    let distance_cm = Cast.toNumber(args.DISTANCE);
+    let distance_mm =  distance_cm * 10;
+    if (DEVICE.proximity <= distance_mm) {
+      return true;
+    }
+    return false;
   }
 
   moveForward(args) {

@@ -1,5 +1,6 @@
 {
   "it": {
+    "IncludeRobot.whenObstacle": "Quando un ostacolo è vicino [DISTANCE] cm",
     "IncludeRobot.moveForward": "Vai avanti di [STEPS] passi",
     "IncludeRobot.moveBackward": "Vai indietro di [STEPS] passi",
     "IncludeRobot.moveForwardTime": "Vai avanti per [SECONDS] secondi",
