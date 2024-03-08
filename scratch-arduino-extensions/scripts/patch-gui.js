@@ -12,7 +12,7 @@ const VmExtManagerFile = path.resolve(GuiDir, './node_modules/scratch-vm/src/ext
 const VmVirtualMachineFile = path.resolve(GuiDir, './node_modules/scratch-vm/src/virtual-machine.js');
 const VmExtArduinoDir = path.resolve(GuiDir, "./node_modules/scratch-vm/src/extensions/", ExtDirName);
 const EditorMessagesDir = path.resolve(GuiDir, "./node_modules/scratch-l10n/locales/editor-msgs.js");
-
+const IncludeMessagesPathFile = path.resolve(BaseDir, "./scratch-l10n/locales/include-msgs.json");
 
 if (!fs.existsSync(VmExtArduinoDir)) {
     fs.symlinkSync(ExtDirPath, VmExtArduinoDir, 'dir');
@@ -33,7 +33,7 @@ for (const ExtId of ExtIds) {
     }
 }
 
-// Add the extension as a core extension. 
+// Add the extension as a core extension.
 let vmCode = fs.readFileSync(VmVirtualMachineFile, 'utf-8');
 for (const ExtId of ExtIds) {
     if (vmCode.includes(ExtId)) {
@@ -48,8 +48,8 @@ for (const ExtId of ExtIds) {
 
 
 
-let replacementListPath = path.join(__dirname, 'include-msgs.json');
-let includeMsgs = JSON.parse(fs.readFileSync(replacementListPath, 'utf8'));
+
+let includeMsgs = JSON.parse(fs.readFileSync(IncludeMessagesPathFile, 'utf8'));
 
 let fileContent = fs.readFileSync(EditorMessagesDir, 'utf8');
 let match = fileContent.match(/export default (\{.*\});/s);
