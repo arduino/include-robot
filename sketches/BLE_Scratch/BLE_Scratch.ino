@@ -170,7 +170,7 @@ void setup() {
 #endif
 
   auto ok = init_sensors();
-#if defined(SENSOR_CHECKS)
+#ifdef SENSOR_CHECKS
   if (!ok) {
     while (1)
       ;
