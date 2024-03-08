@@ -25,8 +25,14 @@ const VmExtArduinoDir = path.resolve(
   "./node_modules/scratch-vm/src/extensions/",
   ExtDirName,
 );
-const EditorMessagesDir = path.resolve(GuiDir, "./node_modules/scratch-l10n/locales/editor-msgs.js");
-const IncludeMessagesPathFile = path.resolve(BaseDir, "./scratch-l10n/locales/include-msgs.json");
+const EditorMessagesDir = path.resolve(
+  GuiDir,
+  "./node_modules/scratch-l10n/locales/editor-msgs.js",
+);
+const IncludeMessagesPathFile = path.resolve(
+  BaseDir,
+  "./scratch-l10n/locales/include-msgs.json",
+);
 
 if (!fs.existsSync(VmExtArduinoDir)) {
   fs.symlinkSync(ExtDirPath, VmExtArduinoDir, "dir");
@@ -66,19 +72,18 @@ for (const ExtId of ExtIds) {
   }
 }
 
-
 // read the editor messages file and include the messages from the include-msgs.json file
-let fileContent = fs.readFileSync(EditorMessagesDir, 'utf8');
+let fileContent = fs.readFileSync(EditorMessagesDir, "utf8");
 let match = fileContent.match(/export default (\{.*\});/s);
 if (!match) {
-    throw new Error('Could not find object in file');
+  throw new Error("Could not find object in file");
 }
-let obj = eval('(' + match[1] + ')');
+let obj = eval("(" + match[1] + ")");
 
-let includeMsgs = JSON.parse(fs.readFileSync(IncludeMessagesPathFile, 'utf8'));
+let includeMsgs = JSON.parse(fs.readFileSync(IncludeMessagesPathFile, "utf8"));
 for (let lang in includeMsgs) {
-    console.log(`Adding "${lang}" translation`);
-    obj[lang] = { ...obj[lang], ...includeMsgs[lang] };
+  console.log(`Adding "${lang}" translation`);
+  obj[lang] = { ...obj[lang], ...includeMsgs[lang] };
 }
-let updatedContent = 'export default ' + JSON.stringify(obj, null, 2) + ';';
+let updatedContent = "export default " + JSON.stringify(obj, null, 2) + ";";
 fs.writeFileSync(EditorMessagesDir, updatedContent);

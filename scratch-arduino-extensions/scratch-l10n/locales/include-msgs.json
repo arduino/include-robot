@@ -1,11 +1,11 @@
 {
-    "it":{
-        "IncludeRobot.moveForward": "Vai avanti di [STEPS] passi",
-        "IncludeRobot.moveBackward": "Vai indietro di [STEPS] passi",
-        "IncludeRobot.moveForwardTime": "Vai avanti per [SECONDS] secondi",
-        "IncludeRobot.moveBackwardTime": "Vai indietro per [SECONDS] secondi",
-        "IncludeRobot.turnLeft": "Gira a sinistra per [SECONDS] secondi",
-        "IncludeRobot.turnRight": "Gira a destra per [SECONDS] secondi",
-        "IncludeRobot.setSpeed": "Imposta velocià al [SPEED] %"
-    }
+  "it": {
+    "IncludeRobot.moveForward": "Vai avanti di [STEPS] passi",
+    "IncludeRobot.moveBackward": "Vai indietro di [STEPS] passi",
+    "IncludeRobot.moveForwardTime": "Vai avanti per [SECONDS] secondi",
+    "IncludeRobot.moveBackwardTime": "Vai indietro per [SECONDS] secondi",
+    "IncludeRobot.turnLeft": "Gira a sinistra per [SECONDS] secondi",
+    "IncludeRobot.turnRight": "Gira a destra per [SECONDS] secondi",
+    "IncludeRobot.setSpeed": "Imposta velocià al [SPEED] %"
+  }
 }
