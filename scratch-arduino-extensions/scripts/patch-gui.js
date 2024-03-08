@@ -47,16 +47,15 @@ for (const ExtId of ExtIds) {
 }
 
 
-
-
-let includeMsgs = JSON.parse(fs.readFileSync(IncludeMessagesPathFile, 'utf8'));
-
+// read the editor messages file and include the messages from the include-msgs.json file
 let fileContent = fs.readFileSync(EditorMessagesDir, 'utf8');
 let match = fileContent.match(/export default (\{.*\});/s);
 if (!match) {
     throw new Error('Could not find object in file');
 }
 let obj = eval('(' + match[1] + ')');
+
+let includeMsgs = JSON.parse(fs.readFileSync(IncludeMessagesPathFile, 'utf8'));
 for (let lang in includeMsgs) {
     console.log(`Adding "${lang}" translation`);
     obj[lang] = { ...obj[lang], ...includeMsgs[lang] };
