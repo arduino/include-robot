@@ -228,6 +228,15 @@ class IncludeRobot {
             },
           },
         },
+        {
+            opcode: "getProximity",
+            text: formatMessage({
+              id: "IncludeRobot.getProximity",
+              default: "Detect proximity, cm",
+              description: "get proximity valuein cm.",
+            }),
+            blockType: BlockType.REPORTER,
+          },
       ],
 
       menus: {},
@@ -280,6 +289,10 @@ class IncludeRobot {
   setSpeed(args) {
     let speed = Cast.toNumber(args.SPEED);
     return DEVICE.setSpeed(speed);
+  }
+
+  getProximity() {
+    return DEVICE.proximity / 10 ;
   }
 }
 
