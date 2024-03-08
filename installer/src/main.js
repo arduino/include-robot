@@ -3,6 +3,9 @@ const path = require('path');
 const { ipcMain } = require('electron');
 const util = require('node:util');
 const exec = util.promisify(require('node:child_process').exec);
+const os = require('os');
+const writeFile = util.promisify(require('node:fs').writeFile);
+const readFile = util.promisify(require('node:fs').readFile);
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -53,7 +56,7 @@ app.on('activate', () => {
   }
 });
 
-const BINARY = './assets/BLE_Scratch.ino.bin';
+const BINARY_PATH = './assets/BLE_Scratch.ino.bin';
 const BLE_FQBN = 'arduino:mbed_nano:nano33ble';
 const ARDUINO_CLI = (() => {
   switch (process.platform) {
@@ -73,7 +76,7 @@ ipcMain.handle('list-board', async (event, arg) => {
 
 ipcMain.handle('upload-binary', async (event, arg) => {
   console.log(arg)
-  const out = await uploadBinary(arg.port, arg.fqbn, BINARY);
+  const out = await uploadBinary(arg.port, arg.fqbn, BINARY_PATH, arg.cfg);
   console.debug("upload done", out);
   return;
 });
@@ -95,11 +98,33 @@ async function listBoards(fqbn_list) {
   }
 }
 
-async function uploadBinary(port, fqbn, binary) {
+async function uploadBinary(port, fqbn, binary, cfg = null) {
+  if (cfg) {
+    binary = await concatConfig(binary, cfg);
+  }
+
   try {
     const { stdout, stderr } = await exec(`${ARDUINO_CLI} upload -v -i "${binary}" -b ${fqbn} -p "${port}"`);
     return stdout.toString();
   } catch (error) {
     console.error('An error occurred:', error);
   }
+}
+
+
+const HEADER = "\x8a\x48\x92\xdf\xaa\x69\x5c\x41";
+const MAGIC = "\x7F";
+
+async function concatConfig(binary_path, cfg) {
+  const cfg_path = path.join(os.tmpdir(), "sketch.bin");
+
+  await writeFile(cfg_path, Buffer.concat([
+    await readFile(binary_path),
+    Buffer.from(HEADER, 'ascii'),
+    Buffer.from(MAGIC, 'ascii'),
+    Buffer.from([cfg.length]),
+    Buffer.from(cfg, 'ascii'),
+  ]));
+
+  return cfg_path;
 }

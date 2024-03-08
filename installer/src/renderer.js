@@ -58,8 +58,12 @@ const upload = document.getElementById('upload');
 
 upload.addEventListener('click', async (event) => {
     console.log("selectPort", selectPort, "selectFqbn", selectFqbn);
+
+    const cfg = document.getElementById('name').value || null;
+
     upload.hidden = true;
-    const result = await window.api.uploadBinary(selectPort, selectFqbn);
+    const result = await window.api.uploadBinary(selectPort, selectFqbn, cfg);
     upload.hidden = false;
+
     console.debug("upload binary", result);
 });

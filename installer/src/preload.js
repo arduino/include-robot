@@ -6,5 +6,5 @@ const { contextBridge, ipcRenderer } = require('electron/renderer')
 
 contextBridge.exposeInMainWorld('api', {
     listBoard: async () => await ipcRenderer.invoke('list-board'),
-    uploadBinary: async (port, fqbn) => await ipcRenderer.invoke('upload-binary', { port, fqbn })
+    uploadBinary: async (port, fqbn, cfg = null) => await ipcRenderer.invoke('upload-binary', { port, fqbn, cfg })
 })
