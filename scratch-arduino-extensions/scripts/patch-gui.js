@@ -59,9 +59,7 @@ if (!match) {
 let obj = eval('(' + match[1] + ')');
 for (let lang in includeMsgs) {
     console.log(`Adding "${lang}" translation`);
-    for (let key in includeMsgs[lang]) {
-        obj[lang][key] = includeMsgs[lang][key];
-    }
+    obj[lang] = { ...obj[lang], ...includeMsgs[lang] };
 }
 let updatedContent = 'export default ' + JSON.stringify(obj, null, 2) + ';';
 fs.writeFileSync(EditorMessagesDir, updatedContent);
