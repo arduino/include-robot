@@ -53,12 +53,23 @@ app.on('activate', () => {
   }
 });
 
+const BINARY = './assets/BLE_Scratch.ino.bin';
+const BLE_FQBN = 'arduino:mbed_nano:nano33ble';
+const ARDUINO_CLI = (() => {
+  switch (process.platform) {
+    case 'win32':
+      return './assets/win/arduino-cli.exe';
+    case 'linux':
+      return './assets/linux/arduino-cli';
+    case 'darwin':
+      // Support x86 macs
+      return './assets/darwin/arduino-cli';
+  }
+})()
 
 ipcMain.handle('list-board', async (event, arg) => {
   return await listBoards([BLE_FQBN]);
 });
-
-const BINARY = './assets/BLE_Scratch.ino.bin';
 
 ipcMain.handle('upload-binary', async (event, arg) => {
   console.log(arg)
@@ -67,11 +78,9 @@ ipcMain.handle('upload-binary', async (event, arg) => {
   return;
 });
 
-const BLE_FQBN = 'arduino:mbed_nano:nano33ble';
-
 async function listBoards(fqbn_list) {
   try {
-    const { stdout, stderr } = await exec('arduino-cli --format=json board list', { encoding: 'utf8' });
+    const { stdout, stderr } = await exec(`${ARDUINO_CLI} --format=json board list`, { encoding: 'utf8' });
     const boardList = JSON.parse(stdout);
 
     const boards = boardList.filter(row => row['matching_boards']?.find(o => fqbn_list.includes(o['fqbn'])));
@@ -88,7 +97,7 @@ async function listBoards(fqbn_list) {
 
 async function uploadBinary(port, fqbn, binary) {
   try {
-    const { stdout, stderr } = await exec(`arduino-cli upload -v -i "${binary}" -b ${fqbn} -p "${port}"`);
+    const { stdout, stderr } = await exec(`${ARDUINO_CLI} upload -v -i "${binary}" -b ${fqbn} -p "${port}"`);
     return stdout.toString();
   } catch (error) {
     console.error('An error occurred:', error);
