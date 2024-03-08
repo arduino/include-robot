@@ -1,11 +1,14 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
-const fs = require('fs');
+const { ipcMain } = require('electron');
+const util = require('node:util');
+const exec = util.promisify(require('node:child_process').exec);
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
   app.quit();
 }
+
 
 const createWindow = () => {
   // Create the browser window.
@@ -23,13 +26,6 @@ const createWindow = () => {
   } else {
     mainWindow.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`));
   }
-
-  try{
-  const data = fs.readFileSync("./assets/BLE_Scratch.ino.bin", 'binary');
-  console.log("lenght:", data.length);
-} catch (err) {
-  console.error(err);
-  }  
 
   // Open the DevTools.
   mainWindow.webContents.openDevTools();
@@ -57,5 +53,44 @@ app.on('activate', () => {
   }
 });
 
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and import them here.
+
+ipcMain.handle('list-board', async (event, arg) => {
+  return await listBoards([BLE_FQBN]);
+});
+
+const BINARY = './assets/BLE_Scratch.ino.bin';
+
+ipcMain.handle('upload-binary', async (event, arg) => {
+  console.log(arg)
+  const out = await uploadBinary(arg.port, arg.fqbn, BINARY);
+  console.debug("upload done", out);
+  return;
+});
+
+const BLE_FQBN = 'arduino:mbed_nano:nano33ble';
+
+async function listBoards(fqbn_list) {
+  try {
+    const { stdout, stderr } = await exec('arduino-cli --format=json board list', { encoding: 'utf8' });
+    const boardList = JSON.parse(stdout);
+
+    const boards = boardList.filter(row => row['matching_boards']?.find(o => fqbn_list.includes(o['fqbn'])));
+
+    return boards.map(board => ({
+      name: board['matching_boards'][0]["name"],
+      fqbn: board['matching_boards'][0]["fqbn"],
+      port: board['port']["address"],
+    }))
+  } catch (err) {
+    console.error("error", err);
+  }
+}
+
+async function uploadBinary(port, fqbn, binary) {
+  try {
+    const { stdout, stderr } = await exec(`arduino-cli upload -v -i "${binary}" -b ${fqbn} -p "${port}"`);
+    return stdout.toString();
+  } catch (error) {
+    console.error('An error occurred:', error);
+  }
+}
