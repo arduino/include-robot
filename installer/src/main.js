@@ -59,14 +59,15 @@ app.on('activate', () => {
 const BINARY_PATH = './assets/BLE_Scratch.ino.bin';
 const BLE_FQBN = 'arduino:mbed_nano:nano33ble';
 const ARDUINO_CLI = (() => {
-  switch (process.platform) {
-    case 'win32':
-      return './assets/win/arduino-cli.exe';
-    case 'linux':
-      return './assets/linux/arduino-cli';
-    case 'darwin':
-      // Support x86 macs
-      return './assets/darwin/arduino-cli';
+  switch (`${process.platform}_${process.arch}`) {
+    case 'win32_x64':
+      return './assets/win32_x64/arduino-cli.exe';
+    case 'linux_x64':
+      return './assets/linux_x64/arduino-cli';
+    case 'darwin_x64':
+      return './assets/darwin_x64/arduino-cli';
+    case 'darwin_arm64':
+      return './assets/darwin_arm64/arduino-cli';
   }
 })()
 

@@ -11,30 +11,34 @@ mkdir -p "$assets_dir"
 download_arduino_cli(){
     echo "Downloading Arduino CLI v${version} binaries"
 
-
-    linux_folder="$assets_dir/linux"
-    darwin_folder="$assets_dir/darwin"
-    win_folder="$assets_dir/win"
+    linux_x64_folder="$assets_dir/linux_x64"
+    darwin_x64_folder="$assets_dir/darwin_x64"
+    darwin_arm64_folder="$assets_dir/darwin_arm64"
+    win_x64_folder="$assets_dir/win_x64"
 
     # Create directories for each platform
-    mkdir -p "$linux_folder"
-    mkdir -p "$darwin_folder"
-    mkdir -p "$win_folder"
+    mkdir -p "$linux_x64_folder"
+    mkdir -p "$darwin_x64_folder"
+    mkdir -p "$darwin_arm64_folder"
+    mkdir -p "$win_x64_folder"
 
     # Define URLs for the binaries
-    linux_url="https://github.com/arduino/arduino-cli/releases/download/v${version}/arduino-cli_${version}_Linux_64bit.tar.gz"
-    darwin_url="https://github.com/arduino/arduino-cli/releases/download/v${version}/arduino-cli_${version}_macOS_64bit.tar.gz"
-    windows_url="https://github.com/arduino/arduino-cli/releases/download/v${version}/arduino-cli_${version}_Windows_32bit.zip"
+    linux_x64_url="https://github.com/arduino/arduino-cli/releases/download/v${version}/arduino-cli_${version}_Linux_64bit.tar.gz"
+    darwin_x64_url="https://github.com/arduino/arduino-cli/releases/download/v${version}/arduino-cli_${version}_macOS_64bit.tar.gz"
+    darwin_arm64_url="https://github.com/arduino/arduino-cli/releases/download/v${version}/arduino-cli_${version}_macOS_arm64.tar.gz"
+    win_x64_url="https://github.com/arduino/arduino-cli/releases/download/v${version}/arduino-cli_${version}_Windows_32bit.zip"
 
     # Download and unpack each binary
-    curl -L $linux_url | tar xz -C "$linux_folder"
-    curl -L $darwin_url | tar xz -C "$darwin_folder"
-    curl -L $windows_url -o "$win_folder/arduino-cli.zip" && unzip -o "$win_folder/arduino-cli.zip" -d "$win_folder" && rm "$win_folder/arduino-cli.zip"
+    curl -L $linux_x64_url | tar xz -C "$linux_x64_folder"
+    curl -L $darwin_x64_url | tar xz -C "$darwin_x64_folder"
+    curl -L $darwin_arm64_url | tar xz -C "$darwin_arm64_folder"
+    curl -L $win_x64_url -o "$win_x64_folder/arduino-cli.zip" && unzip -o "$win_x64_folder/arduino-cli.zip" -d "$win_x64_folder" && rm "$win_x64_folder/arduino-cli.zip"
 
     # cleanup
-    rm -f "$linux_folder/LICENSE.txt"
-    rm -f "$darwin_folder/LICENSE.txt"
-    rm -f "$win_folder/LICENSE.txt"
+    rm -f "$linux_x64_folder/LICENSE.txt"
+    rm -f "$darwin_x64_folder/LICENSE.txt"
+    rm -f "$darwin_arm64_folder/LICENSE.txt"
+    rm -f "$win_x64_folder/LICENSE.txt"
 }
 
 compile_arduino_sketch(){

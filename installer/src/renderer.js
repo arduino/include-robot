@@ -35,6 +35,10 @@ const list = document.getElementById('board-list');
 
 window.setInterval(async () => {
     const result = await window.api.listBoard();
+    if (result === null) {
+        return;
+    }
+
     console.debug(result);
 
     list.innerHTML = result.map(x => `
