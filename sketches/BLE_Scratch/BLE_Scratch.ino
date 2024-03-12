@@ -11,6 +11,8 @@
 // when this is defined the board will print debug messages on serial
 // #define DEBUG
 
+// when this is defined the board fail if a sensor fails to initialize
+// #define SENSOR_CHECKS
 
 #if defined(ARDUINO_NANO_BLE_SENSE)
 #include <Arduino_APDS9960.h>
@@ -113,6 +115,51 @@ uint32_t get_config_bytes(uint8_t *buff, const uint32_t n) {
 }
 
 
+bool init_sensors() {
+  bool ok = true;
+
+#if defined(ARDUINO_NANO_BLE_SENSE)
+  if (!APDS.begin()) {
+    printSerialMsg("Failed to initialized APDS!");
+    ok = false;
+  }
+
+  if (!HTS.begin()) {
+    printSerialMsg("Failed to initialized HTS!");
+    ok = false;
+  }
+
+  if (!BARO.begin()) {
+    printSerialMsg("Failed to initialized BARO!");
+    ok = false;
+  }
+#endif
+
+#if defined(ARDUINO_NANO_BLE_SENSE_R2)
+  if (!APDS.begin()) {
+    printSerialMsg("Failed to initialized APDS!");
+    ok = false;
+  }
+
+  if (!HS300x.begin()) {
+    printSerialMsg("Failed to initialized HTS!");
+    ok = false;
+  }
+
+  if (!BARO.begin()) {
+    printSerialMsg("Failed to initialized BARO!");
+    ok = false;
+  }
+#endif
+
+  // All 3 variants have an IMU on it
+  if (!IMU.begin()) {
+    printSerialMsg("Failed to initialized IMU!");
+    ok = false;
+  }
+
+  return ok;
+}
 
 void setup() {
   Serial.begin(9600);
@@ -122,61 +169,13 @@ void setup() {
   Serial.println("Started");
 #endif
 
-#if defined(ARDUINO_NANO_BLE_SENSE)
-  if (!APDS.begin()) {
-    printSerialMsg("Failed to initialized APDS!");
-
-    while (1)
-      ;
-  }
-
-  if (!HTS.begin()) {
-    printSerialMsg("Failed to initialized HTS!");
-
-    while (1)
-      ;
-  }
-
-  if (!BARO.begin()) {
-    printSerialMsg("Failed to initialized BARO!");
-
+  auto ok = init_sensors();
+#ifdef SENSOR_CHECKS
+  if (!ok) {
     while (1)
       ;
   }
 #endif
-
-#if defined(ARDUINO_NANO_BLE_SENSE_R2)
-  if (!APDS.begin()) {
-    printSerialMsg("Failed to initialized APDS!");
-
-    while (1)
-      ;
-  }
-
-  if (!HS300x.begin()) {
-    printSerialMsg("Failed to initialized HTS!");
-
-    while (1)
-      ;
-  }
-
-  if (!BARO.begin()) {
-    printSerialMsg("Failed to initialized BARO!");
-
-    while (1)
-      ;
-  }
-#endif
-
-
-
-  // All 3 variants have an IMU on it
-  if (!IMU.begin()) {
-    printSerialMsg("Failed to initialized IMU!");
-
-    while (1)
-      ;
-  }
 
   // get binary leading config and interpret as string
   uint8_t cfg[100];
