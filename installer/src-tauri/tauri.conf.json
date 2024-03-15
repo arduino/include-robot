@@ -12,17 +12,24 @@
   "tauri": {
     "allowlist": {
       "all": false,
+      "path": {
+        "all": true
+      },
+      "os": {
+        "all": true
+      },
       "shell": {
         "sidecar": true,
         "scope": [
-          { 
-            "name": "../resources/arduino-cli/arduino-cli", 
-            "sidecar": true, 
-            "args": true 
+          {
+            "name": "../resources/arduino-cli/arduino-cli",
+            "sidecar": true,
+            "args": true
           }
-        ],      
+        ],
         "all": false,
         "open": true
+      },
       "fs": {
         "scope": [
           "$RESOURCE/sketch.bin"
