@@ -45,13 +45,10 @@ fn main() {
         }
     ]).expect("Failed to download resources");
 
-    let sketches = base_dir.join("../../sketches");
+    let sketches = base_dir.join("../../sketches/BLE_Scratch/BLE_Scratch.ino");
+    compile_sketch(&sketches, &resource_dir.join("sketch.bin")).expect("Failed to compile sketch");
 
-    compile_sketch(
-        &sketches.join("BLE_Scratch/BLE_Scratch.ino"),
-        &resource_dir.join("sketch.bin"),
-    )
-    .expect("Failed to compile sketch");
+    println!("cargo:rerun-if-changed={}", sketches.to_str().unwrap());
 
     tauri_build::build()
 }
@@ -88,7 +85,9 @@ fn download_resources(base_dir: &path::Path, resources: &[Resource]) -> anyhow::
 }
 
 fn compile_sketch(sketch: &path::Path, to: &path::Path) -> anyhow::Result<()> {
-    if to.exists() {
+    if to.exists() && fs::metadata(to)?.modified()? >= fs::metadata(sketch)?.modified()? {
+        println!("Binary up to date");
+
         return Ok(());
     }
 
@@ -100,7 +99,7 @@ fn compile_sketch(sketch: &path::Path, to: &path::Path) -> anyhow::Result<()> {
             "-b",
             "arduino:mbed_nano:nano33ble",
             "-e",
-            sketch.to_str().unwrap(),
+            sketch.to_str()?,
         ])
         .output()?;
 
@@ -114,8 +113,8 @@ fn compile_sketch(sketch: &path::Path, to: &path::Path) -> anyhow::Result<()> {
         return Err(anyhow::anyhow!("Compilation failed"));
     }
 
-    let dir = sketch.parent().unwrap();
-    let file = sketch.file_name().unwrap();
+    let dir = sketch.parent()?;
+    let file = sketch.file_name()?;
     let bin = dir
         .join("build")
         .join("arduino.mbed_nano.nano33ble")
