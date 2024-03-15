@@ -23,6 +23,11 @@
         ],      
         "all": false,
         "open": true
+      "fs": {
+        "scope": [
+          "$RESOURCE/sketch.bin"
+        ],
+        "readFile": true
       }
     },
     "windows": [
@@ -36,6 +41,9 @@
       "csp": null
     },
     "bundle": {
+      "resources": [
+        "../resources/sketch.bin"
+      ],
       "externalBin": [
         "../resources/arduino-cli/arduino-cli"
       ],
