@@ -12,6 +12,12 @@
   "tauri": {
     "allowlist": {
       "all": false,
+      "path": {
+        "all": true
+      },
+      "os": {
+        "all": true
+      },
       "shell": {
         "sidecar": true,
         "scope": [
@@ -23,6 +29,12 @@
         ],
         "all": false,
         "open": true
+      },
+      "fs": {
+        "scope": [
+          "$RESOURCE/sketch.bin"
+        ],
+        "readFile": true
       }
     },
     "windows": [
