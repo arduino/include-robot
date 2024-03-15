@@ -99,7 +99,7 @@ fn compile_sketch(sketch: &path::Path, to: &path::Path) -> anyhow::Result<()> {
             "-b",
             "arduino:mbed_nano:nano33ble",
             "-e",
-            sketch.to_str()?,
+            sketch.to_str().unwrap(),
         ])
         .output()?;
 
@@ -113,8 +113,8 @@ fn compile_sketch(sketch: &path::Path, to: &path::Path) -> anyhow::Result<()> {
         return Err(anyhow::anyhow!("Compilation failed"));
     }
 
-    let dir = sketch.parent()?;
-    let file = sketch.file_name()?;
+    let dir = sketch.parent().unwrap();
+    let file = sketch.file_name().unwrap();
     let bin = dir
         .join("build")
         .join("arduino.mbed_nano.nano33ble")
