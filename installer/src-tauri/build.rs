@@ -45,8 +45,12 @@ fn main() {
         }
     ]).expect("Failed to download resources");
 
+    let arduino_cli = get_arduino_cli_path(&resource_dir);
+
     let sketches = base_dir.join("../../sketches/BLE_Scratch/BLE_Scratch.ino");
-    compile_sketch(&sketches, &resource_dir.join("sketch.bin")).expect("Failed to compile sketch");
+
+    compile_sketch(&arduino_cli, &sketches, &resource_dir.join("sketch.bin"))
+        .expect("Failed to compile sketch");
 
     println!("cargo:rerun-if-changed={}", sketches.to_str().unwrap());
 
@@ -84,7 +88,19 @@ fn download_resources(base_dir: &path::Path, resources: &[Resource]) -> anyhow::
     Ok(())
 }
 
-fn compile_sketch(sketch: &path::Path, to: &path::Path) -> anyhow::Result<()> {
+fn get_arduino_cli_path(resource_dir: &path::Path) -> PathBuf {
+    let target_triplet = std::env::var("TARGET").unwrap();
+
+    return resource_dir
+        .join("arduino-cli")
+        .join(format!("arduino-cli-{}", target_triplet));
+}
+
+fn compile_sketch(
+    arduino_cli: &path::Path,
+    sketch: &path::Path,
+    to: &path::Path,
+) -> anyhow::Result<()> {
     if to.exists() && fs::metadata(to)?.modified()? >= fs::metadata(sketch)?.modified()? {
         println!("Binary up to date");
 
@@ -93,7 +109,7 @@ fn compile_sketch(sketch: &path::Path, to: &path::Path) -> anyhow::Result<()> {
 
     println!("Compiling sketch '{}'", sketch.to_str().unwrap_or_default());
 
-    let output = Command::new("arduino-cli")
+    let output = Command::new(arduino_cli)
         .args(&[
             "compile",
             "-b",
