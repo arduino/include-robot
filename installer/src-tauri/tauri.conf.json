@@ -15,12 +15,12 @@
       "shell": {
         "sidecar": true,
         "scope": [
-          { 
-            "name": "../resources/arduino-cli/arduino-cli", 
-            "sidecar": true, 
-            "args": true 
+          {
+            "name": "../resources/arduino-cli/arduino-cli",
+            "sidecar": true,
+            "args": true
           }
-        ],      
+        ],
         "all": false,
         "open": true
       }
@@ -36,6 +36,9 @@
       "csp": null
     },
     "bundle": {
+      "resources": [
+        "../resources/sketch.bin"
+      ],
       "externalBin": [
         "../resources/arduino-cli/arduino-cli"
       ],
