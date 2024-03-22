@@ -9,6 +9,7 @@ class Robot {
   int speed;
 
 public:
+  Robot() {}  // Empty constructor
   Robot(int rightWheelPin, int leftWheelPin) {
     this->rightWheel = Servo();
     this->leftWheel = Servo();

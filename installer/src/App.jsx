@@ -66,7 +66,7 @@ function App() {
     let board = boards.find(x => x.name === selectedBoard)
 
 
-    let dstPath = await invoke("append_config", { binPath: "../resources/sketch.bin", cfg: "test" }).catch(console.error);
+    let dstPath = await invoke("append_config", { binPath: "../resources/sketch.bin", config: { ble_name: "xxx", left_servo: 3, right_servo: 4 } }).catch(console.error);
 
     console.log("upload binary", dstPath, "to", board);
 
