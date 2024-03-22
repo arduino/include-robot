@@ -1,40 +1,53 @@
 // BLE Scratch v3 / Connect BLE Sense boards to Scratch via Bluetooth
 // 2023.03.04 Added support for BLE Sense R2 and STOPSERVO command
 
-
-// Uncomment one of these defines to select which board you are using
-
-//#define ARDUINO_NANO_BLE_SENSE
+// Select the variant of the NANO 33 BLE
+#ifdef ARDUINO_ARDUINO_NANO33BLE
 //#define ARDUINO_NANO_BLE
+//#define ARDUINO_NANO_BLE_SENSE
 #define ARDUINO_NANO_BLE_SENSE_R2
+#endif
 
 // when this is defined the board will print debug messages on serial
-// #define DEBUG
+#define DEBUG
 
 // when this is defined the board fail if a sensor fails to initialize
-// #define SENSOR_CHECKS
+#define SENSOR_CHECKS
 
-#if defined(ARDUINO_NANO_BLE_SENSE)
+#ifdef ARDUINO_NANO_BLE_SENSE
 #include <Arduino_APDS9960.h>
 #include <Arduino_HTS221.h>
 #include <Arduino_LPS22HB.h>
 #include <Arduino_LSM9DS1.h>
 #endif
 
-#if defined(ARDUINO_NANO_BLE_SENSE_R2)
+#ifdef ARDUINO_NANO_BLE_SENSE_R2
 #include <Arduino_APDS9960.h>
+#include <Arduino_BMI270_BMM150.h>
 #include <Arduino_HS300x.h>
 #include <Arduino_LPS22HB.h>
-#include <Arduino_BMI270_BMM150.h>
 #endif
 
-#if defined(ARDUINO_NANO_BLE)
+#ifdef ARDUINO_NANO_BLE
 #include <Arduino_LSM9DS1.h>
 #endif
 
-#include "robot.h"
-#include <Servo.h>
+#ifdef ARDUINO_NANO_RP2040_CONNECT
+#include <Arduino_LSM6DSOX.h>
+// #include <WiFiNINA.h>
+const int lred = 0; //LEDR.get();
+const int lgreen = 0; //LEDG.get();
+const int lblue = 0; //LEDB.get();
+#else
+const int lred = LEDR;
+const int lgreen = LEDG;
+const int lblue = LEDB;
+#endif
+
 #include <ArduinoBLE.h>
+#include <Servo.h>
+
+#include "robot.h"
 
 #define BLE_SENSE_UUID(val) ("6fbe1da7-" val "-44de-92c4-bb6e04fb0212")
 
@@ -63,9 +76,6 @@ String name;
 // delay beafore each sensor getter
 int delayTime = 10;
 
-// Sensor data
-int red = 0, green = 0, blue = 0, ambientLight = 0;
-int proximity = 255;
 
 void printSerialMsg(const char *msg) {
   if (Serial) {
@@ -178,9 +188,9 @@ void setup() {
 #endif
 
   // get binary leading config and interpret as string
-  uint8_t cfg[100];
-  auto n = get_config_bytes(cfg, 100);
-  String userName(cfg, n);
+  // uint8_t cfg[100];
+  // auto n = get_config_bytes(cfg, 100);
+  // String userName(cfg, n);
 
   if (!BLE.begin()) {
     printSerialMsg("Failed to initialized BLE!");
@@ -197,14 +207,14 @@ void setup() {
   address.toUpperCase();
 
   name = "BLESense-";
-  if (userName != "") {
-    name += userName;
-  } else {
+  // if (userName != "") {
+  //   name += userName;
+  // } else {
     name += address[address.length() - 5];
     name += address[address.length() - 4];
     name += address[address.length() - 2];
     name += address[address.length() - 1];
-  }
+  // }
 
   if (Serial) {
     Serial.print("name = ");
@@ -262,69 +272,74 @@ void loop() {
   }
 }
 
-
-
 void sendFirstPartData() {
+  float temperature = 0,
+        pressure = 0,
+        humidity = 0,
+        magneticFieldX = 0, magneticFieldY = 0, magneticFieldZ = 0,
+        accelerationX = 0, accelerationY = 0, accelerationZ = 0,
+        gyroscopeX = 0, gyroscopeY = 0, gyroscopeZ = 0;
 
-
+/*
+  Temperature
+*/
 #if defined(ARDUINO_NANO_BLE_SENSE)
-  /*
-     BARO sensor
-  */
-  float pressure = BARO.readPressure();
+  temperature = HTS.readTemperature();
   delay(delayTime);
-
-  /*
-     HTS sensor
-  */
-  float temperature = HTS.readTemperature();
-  delay(delayTime);
-
-  float humidity = HTS.readHumidity();
-  delay(delayTime);
-
 #elif defined(ARDUINO_NANO_BLE_SENSE_R2)
-  /*
-     BARO sensor
-  */
-  float pressure = BARO.readPressure();
+  temperature = HS300x.readTemperature();
   delay(delayTime);
+#elif defined(ARDUINO_NANO_RP2040_CONNECT)
+//   if (IMU.temperatureAvailable()) {
+//     int t;
+//     IMU.readTemperature(t);
+//     temperature = (float)t;
+//   }
+  temperature = 42.0;
+#endif
+
+/*
+  Pressure
+*/
+#if defined(ARDUINO_NANO_BLE_SENSE)
+  pressure = BARO.readPressure();
+  delay(delayTime);
+#elif defined(ARDUINO_NANO_BLE_SENSE_R2)
+  pressure = BARO.readPressure();
+  delay(delayTime);
+#endif
 
   /*
-     HTS sensor
+  Humidity
   */
-  float temperature = HS300x.readTemperature();
+#if defined(ARDUINO_NANO_BLE_SENSE)
+  humidity = HTS.readHumidity();
   delay(delayTime);
-
-  float humidity = HS300x.readHumidity();
+#elif defined(ARDUINO_NANO_BLE_SENSE_R2)
+  humidity = HS300x.readHumidity();
   delay(delayTime);
-
-#else
-  float pressure = 0;
-  float temperature = 0;
-  float humidity = 0;
 #endif
 
   /*
      IMU sensor
   */
-  float accelerationX = 0, accelerationY = 0, accelerationZ = 0;
-  if (IMU.accelerationAvailable()) {
-    IMU.readAcceleration(accelerationX, accelerationY, accelerationZ);
-  }
-  delay(delayTime);
+#ifdef ARDUINO_NANO_BLE_SENSE || ARDUINO_NANO_BLE_SENSE_R2 || ARDUINO_NANO_BLE
+//   if (IMU.magneticFieldAvailable()) {
+//     IMU.readMagneticField(magneticFieldX, magneticFieldY, magneticFieldZ);
+//   }
+#endif
+//   if (IMU.accelerationAvailable()) {
+//     IMU.readAcceleration(accelerationX, accelerationY, accelerationZ);
+//   }
+//   delay(delayTime);
+//   if (IMU.gyroscopeAvailable()) {
+//     IMU.readGyroscope(gyroscopeX, gyroscopeY, gyroscopeZ);
+//   }
+//   delay(delayTime);
 
-  float gyroscopeX = 0, gyroscopeY = 0, gyroscopeZ = 0;
-  if (IMU.gyroscopeAvailable()) {
-    IMU.readGyroscope(gyroscopeX, gyroscopeY, gyroscopeZ);
-  }
-  delay(delayTime);
-
-  float magneticFieldX = 0, magneticFieldY = 0, magneticFieldZ = 0;
-  if (IMU.magneticFieldAvailable()) {
-    IMU.readMagneticField(magneticFieldX, magneticFieldY, magneticFieldZ);
-  }
-  delay(delayTime);
+accelerationX = 1;
+accelerationY = 7;
+accelerationZ = 7;
 
   float data[16] = {
     (float)notificationState,
@@ -354,11 +369,14 @@ void sendFirstPartData() {
 }
 
 void sendSecondPartData() {
-  int gesture = -1;
-#if defined(ARDUINO_NANO_BLE_SENSE) || defined(ARDUINO_NANO_BLE_SENSE_R2)
+  int red = 0, green = 0, blue = 0, ambientLight = 0,
+      proximity = 255,
+      gesture = -1;
+
   /*
      APDS sensor
   */
+#if defined(ARDUINO_NANO_BLE_SENSE) || defined(ARDUINO_NANO_BLE_SENSE_R2)
   // check if a color reading is available
   if (APDS.colorAvailable()) {
     // read the color
@@ -372,19 +390,11 @@ void sendSecondPartData() {
   }
   delay(delayTime);
 
-
   // check if a proximity reading is available
   if (APDS.gestureAvailable()) {
     gesture = APDS.readGesture();
   }
   delay(delayTime);
-#else
-  red = 0;
-  green = 0;
-  blue = 0;
-  ambientLight = 0;
-  proximity = 0;
-  gesture = 0;
 #endif
 
 
@@ -400,14 +410,14 @@ void sendSecondPartData() {
 
     (float)proximity,
 
-    (float)analogRead(0),
-    (float)analogRead(1),
-    (float)analogRead(2),
-    (float)analogRead(3),
-    (float)analogRead(4),
-    (float)analogRead(5),
-    (float)analogRead(6),
-    (float)analogRead(7),
+    0,//(float)analogRead(0),
+    0,//(float)analogRead(1),
+    0,//(float)analogRead(2),
+    0,//(float)analogRead(3),
+    0,//(float)analogRead(4),
+    0,//(float)analogRead(5),
+    0,//(float)analogRead(6),
+    0,//(float)analogRead(7),
     0
   };
 
@@ -438,10 +448,15 @@ typedef struct WrapServo {
 WrapServo *root = NULL;
 
 void onPinActionCharacteristicWrite(BLEDevice central, BLECharacteristic characteristic) {
+    Serial.print("receive pin ");
   enum pinAction action = (enum pinAction)pinActionCharacteristic[0];
   uint8_t pinNumber = pinActionCharacteristic[1];
   uint8_t pinValue = pinActionCharacteristic[2];
 
+Serial.print("receive pin ");
+Serial.print(pinValue);
+Serial.print(" ");
+Serial.println(pinNumber);
   uint8_t response[4] = { 0xFF, pinNumber, 0xFF, 0xFF };
   uint16_t value;
   WrapServo *n, *nxt;
@@ -554,9 +569,9 @@ void onRgbLedCharacteristicWrite(BLEDevice central, BLECharacteristic characteri
   byte g = rgbLedCharacteristic[1];
   byte b = rgbLedCharacteristic[2];
 
-  setLedPinValue(LEDR, r);
-  setLedPinValue(LEDG, g);
-  setLedPinValue(LEDB, b);
+  setLedPinValue(lred, r);
+  setLedPinValue(lgreen, g);
+  setLedPinValue(lblue, b);
 }
 
 void setLedPinValue(int pin, int value) {
