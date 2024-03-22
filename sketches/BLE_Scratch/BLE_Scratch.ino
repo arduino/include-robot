@@ -49,9 +49,7 @@ const int lblue = LEDB;
 
 #include "robot.h"
 
-const String BLE_SENSE_UUID(const String val) {
-  return "6fbe1da7-" + val + "-44de-92c4-bb6e04fb0212";
-}
+#define BLE_SENSE_UUID(val) ("6fbe1da7-" val "-44de-92c4-bb6e04fb0212")
 
 const int VERSION = 0x00000000;
 const uint8_t HEADER[] = { 0x8a, 0x48, 0x92, 0xdf, 0xaa, 0x69, 0x5c, 0x41 };
@@ -64,13 +62,13 @@ const int ROBOT_RIGHT_WHEEL = 4;
 
 Robot myra = Robot(ROBOT_RIGHT_WHEEL, ROBOT_LEFT_WHEEL);
 
-BLEService service(BLE_SENSE_UUID("0000").c_str());
-BLEUnsignedIntCharacteristic versionCharacteristic(BLE_SENSE_UUID("1001").c_str(), BLERead);
+BLEService service(BLE_SENSE_UUID("0000"));
+BLEUnsignedIntCharacteristic versionCharacteristic(BLE_SENSE_UUID("1001"), BLERead);
 
-BLECharacteristic sensorsData(BLE_SENSE_UUID("1010").c_str(), BLENotify, 16 * sizeof(float));                     // first element it's type and data
-BLECharacteristic rgbLedCharacteristic(BLE_SENSE_UUID("6001").c_str(), BLEWrite, 3 * sizeof(byte));               // Array of 3 bytes, RGB
-BLECharacteristic pinActionCharacteristic(BLE_SENSE_UUID("6002").c_str(), BLERead | BLEWrite, 4 * sizeof(byte));  // Array of 3 bytes, action + pinNumber + data
-BLECharacteristic pinRobotCharacteristic(BLE_SENSE_UUID("6003").c_str(), BLEWrite, 3 * sizeof(byte));             // Array of 3 bytes, 1 byte action + 2 bytes for data
+BLECharacteristic sensorsData(BLE_SENSE_UUID("1010"), BLENotify, 16 * sizeof(float));                     // first element it's type and data
+BLECharacteristic rgbLedCharacteristic(BLE_SENSE_UUID("6001"), BLEWrite, 3 * sizeof(byte));               // Array of 3 bytes, RGB
+BLECharacteristic pinActionCharacteristic(BLE_SENSE_UUID("6002"), BLERead | BLEWrite, 4 * sizeof(byte));  // Array of 3 bytes, action + pinNumber + data
+BLECharacteristic pinRobotCharacteristic(BLE_SENSE_UUID("6003"), BLEWrite, 3 * sizeof(byte));             // Array of 3 bytes, 1 byte action + 2 bytes for data
 
 // String to calculate the local and device name
 String name;
