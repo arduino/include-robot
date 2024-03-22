@@ -17,6 +17,8 @@ bytes = "1.5.0"
 anyhow = "1.0"
 
 [dependencies]
+rmp-serde = "1.1.2"
+thiserror = "1.0.58"
 tauri = { version = "1", features = [
     "os-all",
     "path-all",

@@ -8,7 +8,8 @@ use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
+use thiserror::Error;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
@@ -19,30 +20,51 @@ fn greet(name: &str) -> String {
 const HEADER: &[u8] = b"\x8a\x48\x92\xdf\xaa\x69\x5c\x41";
 const MAGIC: &[u8] = b"\x7f";
 
-#[derive(Debug, Serialize)]
-struct CmdError(String);
+#[derive(Debug, Error)]
+enum CmdError {
+    #[error("io error: {0}")]
+    Io(#[from] io::Error),
+    #[error("msgpack encode error: {0}")]
+    Encode(#[from] rmp_serde::encode::Error),
+    #[error("fail to resolve '{0}'")]
+    Resolve(&'static str),
+}
 
-impl From<io::Error> for CmdError {
-    fn from(s: io::Error) -> Self {
-        CmdError(format!("io error: {}", s))
+// we must manually implement serde::Serialize
+impl serde::Serialize for CmdError {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::ser::Serializer,
+    {
+        serializer.serialize_str(self.to_string().as_ref())
     }
+}
+
+// Config order should match the order in the Arduino sketch, because we are using msgpack array.
+#[derive(Debug, Serialize, Deserialize)]
+struct Config {
+    ble_name: String,
+    left_servo: u8,
+    right_servo: u8,
 }
 
 #[tauri::command]
 fn append_config(
     app_handle: tauri::AppHandle,
     bin_path: &Path,
-    cfg: &str,
+    config: Config,
 ) -> Result<PathBuf, CmdError> {
     let path = app_handle.path_resolver();
 
+    let config_buf = rmp_serde::to_vec(&config)?;
+
     let src_path = path
         .resolve_resource(bin_path)
-        .ok_or(CmdError("failed to get resolve source path".to_owned()))?;
+        .ok_or(CmdError::Resolve("source path"))?;
 
     let dst_path = path
         .app_cache_dir()
-        .ok_or(CmdError("failed to get app cache dir".to_owned()))?
+        .ok_or(CmdError::Resolve("cache dir path"))?
         .join("sketch.cfg.bin");
 
     let mut src = File::open(src_path)?;
@@ -55,8 +77,7 @@ fn append_config(
     io::copy(&mut src, &mut dst)?;
     dst.write_all(HEADER)?;
     dst.write_all(MAGIC)?;
-    dst.write_all(&[cfg.len() as u8])?;
-    dst.write_all(cfg.as_bytes())?;
+    dst.write_all(&config_buf)?;
 
     Ok(dst_path.to_owned())
 }
