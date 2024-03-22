@@ -23,9 +23,9 @@
 
 #ifdef ARDUINO_NANO_BLE_SENSE_R2
 #include <Arduino_APDS9960.h>
+#include <Arduino_BMI270_BMM150.h>
 #include <Arduino_HS300x.h>
 #include <Arduino_LPS22HB.h>
-#include <Arduino_BMI270_BMM150.h>
 #endif
 
 #ifdef ARDUINO_NANO_BLE
@@ -35,6 +35,13 @@
 #ifdef ARDUINO_NANO_RP2040_CONNECT
 #include <Arduino_LSM6DSOX.h>
 #include <WiFiNINA.h>
+const int lred = LEDR.get();
+const int lgreen = LEDG.get();
+const int lblue = LEDB.get();
+#else
+const int lred = LEDR;
+const int lgreen = LEDG;
+const int lblue = LEDB;
 #endif
 
 #include <ArduinoBLE.h>
@@ -169,14 +176,16 @@ bool init_sensors() {
 void setup() {
   Serial.begin(9600);
 #ifdef DEBUG
-  while (!Serial);
+  while (!Serial)
+    ;
   Serial.println("Started");
 #endif
 
   auto ok = init_sensors();
 #ifdef SENSOR_CHECKS
   if (!ok) {
-    while (1);
+    while (1)
+      ;
   }
 #endif
 
@@ -188,7 +197,8 @@ void setup() {
   if (!BLE.begin()) {
     printSerialMsg("Failed to initialized BLE!");
 
-    while (1);
+    while (1)
+      ;
   }
 
   String address = BLE.address();
@@ -263,8 +273,6 @@ void loop() {
     }
   }
 }
-
-
 
 void sendFirstPartData() {
   float temperature = 0,
@@ -553,9 +561,9 @@ void onRgbLedCharacteristicWrite(BLEDevice central, BLECharacteristic characteri
   byte g = rgbLedCharacteristic[1];
   byte b = rgbLedCharacteristic[2];
 
-  setLedPinValue(LEDR, r);
-  setLedPinValue(LEDG, g);
-  setLedPinValue(LEDB, b);
+  setLedPinValue(lred, r);
+  setLedPinValue(lgreen, g);
+  setLedPinValue(lblue, b);
 }
 
 void setLedPinValue(int pin, int value) {
