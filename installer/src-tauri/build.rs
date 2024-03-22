@@ -40,7 +40,7 @@ fn main() {
         Resource {
             name: "arduino-cli.exe".into(),
             url: format!("https://github.com/arduino/arduino-cli/releases/download/v{0}/arduino-cli_{0}_Windows_64bit.zip", ARDUINO_CLI_VERSION).into(),
-            file: "arduino-cli-x86_64-pc-windows-msvc".into(),
+            file: "arduino-cli-x86_64-pc-windows-msvc.exe".into(),
             download: unpack_zip,
         }
     ]).expect("Failed to download resources");
