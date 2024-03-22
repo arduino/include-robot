@@ -34,10 +34,10 @@
 
 #ifdef ARDUINO_NANO_RP2040_CONNECT
 #include <Arduino_LSM6DSOX.h>
-#include <WiFiNINA.h>
-const int lred = LEDR.get();
-const int lgreen = LEDG.get();
-const int lblue = LEDB.get();
+// #include <WiFiNINA.h>
+const int lred = 0; //LEDR.get();
+const int lgreen = 0; //LEDG.get();
+const int lblue = 0; //LEDB.get();
 #else
 const int lred = LEDR;
 const int lgreen = LEDG;
@@ -190,9 +190,9 @@ void setup() {
 #endif
 
   // get binary leading config and interpret as string
-  uint8_t cfg[100];
-  auto n = get_config_bytes(cfg, 100);
-  String userName(cfg, n);
+  // uint8_t cfg[100];
+  // auto n = get_config_bytes(cfg, 100);
+  // String userName(cfg, n);
 
   if (!BLE.begin()) {
     printSerialMsg("Failed to initialized BLE!");
@@ -209,14 +209,14 @@ void setup() {
   address.toUpperCase();
 
   name = "BLESense-";
-  if (userName != "") {
-    name += userName;
-  } else {
+  // if (userName != "") {
+  //   name += userName;
+  // } else {
     name += address[address.length() - 5];
     name += address[address.length() - 4];
     name += address[address.length() - 2];
     name += address[address.length() - 1];
-  }
+  // }
 
   if (Serial) {
     Serial.print("name = ");
@@ -292,11 +292,12 @@ void sendFirstPartData() {
   temperature = HS300x.readTemperature();
   delay(delayTime);
 #elif defined(ARDUINO_NANO_RP2040_CONNECT)
-  if (IMU.temperatureAvailable()) {
-    int t;
-    IMU.readTemperature(t);
-    temperature = (float)t;
-  }
+//   if (IMU.temperatureAvailable()) {
+//     int t;
+//     IMU.readTemperature(t);
+//     temperature = (float)t;
+//   }
+  temperature = 42.0;
 #endif
 
 /*
@@ -325,18 +326,22 @@ void sendFirstPartData() {
      IMU sensor
   */
 #ifdef ARDUINO_NANO_BLE_SENSE || ARDUINO_NANO_BLE_SENSE_R2 || ARDUINO_NANO_BLE
-  if (IMU.magneticFieldAvailable()) {
-    IMU.readMagneticField(magneticFieldX, magneticFieldY, magneticFieldZ);
-  }
+//   if (IMU.magneticFieldAvailable()) {
+//     IMU.readMagneticField(magneticFieldX, magneticFieldY, magneticFieldZ);
+//   }
 #endif
-  if (IMU.accelerationAvailable()) {
-    IMU.readAcceleration(accelerationX, accelerationY, accelerationZ);
-  }
-  delay(delayTime);
-  if (IMU.gyroscopeAvailable()) {
-    IMU.readGyroscope(gyroscopeX, gyroscopeY, gyroscopeZ);
-  }
-  delay(delayTime);
+//   if (IMU.accelerationAvailable()) {
+//     IMU.readAcceleration(accelerationX, accelerationY, accelerationZ);
+//   }
+//   delay(delayTime);
+//   if (IMU.gyroscopeAvailable()) {
+//     IMU.readGyroscope(gyroscopeX, gyroscopeY, gyroscopeZ);
+//   }
+//   delay(delayTime);
+
+accelerationX = 1;
+accelerationY = 7;
+accelerationZ = 7;
 
   float data[16] = {
     (float)notificationState,
@@ -407,14 +412,14 @@ void sendSecondPartData() {
 
     (float)proximity,
 
-    (float)analogRead(0),
-    (float)analogRead(1),
-    (float)analogRead(2),
-    (float)analogRead(3),
-    (float)analogRead(4),
-    (float)analogRead(5),
-    (float)analogRead(6),
-    (float)analogRead(7),
+    0,//(float)analogRead(0),
+    0,//(float)analogRead(1),
+    0,//(float)analogRead(2),
+    0,//(float)analogRead(3),
+    0,//(float)analogRead(4),
+    0,//(float)analogRead(5),
+    0,//(float)analogRead(6),
+    0,//(float)analogRead(7),
     0
   };
 
@@ -445,10 +450,15 @@ typedef struct WrapServo {
 WrapServo *root = NULL;
 
 void onPinActionCharacteristicWrite(BLEDevice central, BLECharacteristic characteristic) {
+    Serial.print("receive pin ");
   enum pinAction action = (enum pinAction)pinActionCharacteristic[0];
   uint8_t pinNumber = pinActionCharacteristic[1];
   uint8_t pinValue = pinActionCharacteristic[2];
 
+Serial.print("receive pin ");
+Serial.print(pinValue);
+Serial.print(" ");
+Serial.println(pinNumber);
   uint8_t response[4] = { 0xFF, pinNumber, 0xFF, 0xFF };
   uint16_t value;
   WrapServo *n, *nxt;
