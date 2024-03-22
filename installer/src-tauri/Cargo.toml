@@ -9,9 +9,21 @@ edition = "2021"
 
 [build-dependencies]
 tauri-build = { version = "1", features = [] }
+reqwest = { version = "0.11", features = ["blocking"] }
+tar = "0.4"
+flate2 = "1.0"
+zip = "0.5"
+bytes = "1.5.0"
+anyhow = "1.0"
 
 [dependencies]
-tauri = { version = "1", features = [ "shell-sidecar", "shell-open"] }
+tauri = { version = "1", features = [
+    "os-all",
+    "path-all",
+    "fs-read-file",
+    "shell-sidecar",
+    "shell-open",
+] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 
