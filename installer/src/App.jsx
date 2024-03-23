@@ -162,7 +162,7 @@ function App() {
             <div className="flex flex-row items-start gap-4">
               <div className="w-1/3 text-right"></div>
               <div className="md:w-2/3 pt-1">
-                <button disabled={!selectedBoard.length} className="mt-9 font-semibold leading-none text-white py-4 px-10 bg-blue-700 rounded hover:bg-blue-600 focus:ring-2 focus:ring-offset-2 focus:ring-blue-700 focus:outline-none
+                <button disabled={!selectedBoard.length || uploading} className="mt-2 font-semibold leading-none text-white py-4 px-10 bg-blue-700 rounded hover:bg-blue-600 focus:ring-2 focus:ring-offset-2 focus:ring-blue-700 focus:outline-none
                 disabled:bg-sky-900 disabled:text-slate-500 disabled:border-blue-300 disabled:shadow-none">
                   Upload
                 </button>
