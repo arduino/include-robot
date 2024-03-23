@@ -12,7 +12,8 @@
   "dependencies": {
     "@tauri-apps/api": "^1",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-tooltip": "^5.26.3"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^1",
