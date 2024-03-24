@@ -4,4 +4,6 @@ const tail = (str) => {
   return str ? str.slice(-1 * STDOUT_SIZE) : ''
 }
 
+
+
 export default tail
