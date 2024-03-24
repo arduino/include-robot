@@ -18,6 +18,10 @@
       "os": {
         "all": true
       },
+      "window": {
+        "setMinSize": true,
+        "setFullscreen": true
+      },
       "shell": {
         "sidecar": true,
         "scope": [
