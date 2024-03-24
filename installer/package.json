@@ -8,8 +8,8 @@
         "build": "vite build",
         "preview": "vite preview",
         "tauri": "tauri",
-        "lint": "eslint . --max-warnings=0",
-        "format": "prettier . --write"
+        "lint": "eslint src/**/*.{js,jsx} --max-warnings=0",
+        "format": "prettier src/**/*.{js,jsx} --write"
     },
     "dependencies": {
         "@tauri-apps/api": "^1",

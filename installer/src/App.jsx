@@ -7,7 +7,7 @@ import capitalize from './utils/capitalize';
 import './App.css';
 import reducer from './reducers/state-reducer';
 
-const getBoards = async (fqbn_list) => {
+const getBoards = async (fqbnList) => {
     const command = Command.sidecar('../resources/arduino-cli/arduino-cli', [
         'board',
         'list',
@@ -21,12 +21,12 @@ const getBoards = async (fqbn_list) => {
     console.log('********   END: app:34 ********');
     return boardList
         .filter((row) =>
-            row['matching_boards']?.find((o) => fqbn_list.includes(o['fqbn']))
+            row.matching_boards?.find((o) => fqbnList.includes(o.fqbn))
         )
         .map((board) => ({
-            name: board['matching_boards'][0]['name'],
-            fqbn: board['matching_boards'][0]['fqbn'],
-            port: board['port']['address'],
+            name: board.matching_boards[0]?.name,
+            fqbn: board.matching_boards[0]?.fqbn,
+            port: board.port?.address,
         }));
 };
 
@@ -113,14 +113,14 @@ function App() {
                 ble_name: name,
                 cfg: name, // legacy, remove when msgpack stuff is completed
                 left_servo: leftServo,
-                rightServo: rightServo,
+                right_servo: rightServo,
             });
         } catch (error) {
             handleError(error);
             return;
         }
 
-        const uploadMsg = `Uploading binary ${dstPath.split(/.*[\/|\\]/)[1]} to ${board.port}\n`;
+        const uploadMsg = `Uploading binary ${dstPath.split(/.*[/|\\]/)[1]} to ${board.port}\n`;
         dispatch({ type: 'APPEND_STDOUT', stdout: uploadMsg });
         console.log(uploadMsg);
 
@@ -169,6 +169,7 @@ function App() {
                             className="underline"
                             href="https://labs.arduino.cc/en/labs/include-robot"
                             target="_blank"
+                            rel="noreferrer noopener"
                         >
                             our documentation
                         </a>
@@ -204,36 +205,38 @@ function App() {
                             tooltip="The PIN number of the right servo motor"
                         />
 
-                        <div className="flex flex-row items-start gap-4 mt-4">
-                            <div className="w-1/3 text-right">
-                                <label className="select-none w-full text-base font-semibold text-gray-300">
-                                    Available boards
-                                    <span className="ml-2 text-red-600">*</span>
-                                </label>
-                            </div>
-                            <div className="md:w-2/3 pt-[0.3rem]">
-                                <fieldset>
+                        <fieldset>
+                            <div className="flex flex-row items-start gap-4 mt-4">
+                                <div className="w-1/3 text-right">
+                                    <legend className="select-none w-full text-base font-semibold text-gray-300">
+                                        Available boards
+                                        <span className="ml-2 text-red-600">
+                                            *
+                                        </span>
+                                    </legend>
+                                </div>
+                                <div className="md:w-2/3 pt-[0.3rem]">
                                     {state.boards.length ? (
-                                        state.boards.map((x, index) => (
+                                        state.boards.map((board) => (
                                             <div
                                                 className="flex items-center mb-4"
-                                                key={index}
+                                                key={board.fqbn}
                                             >
                                                 <input
-                                                    value={x.name}
+                                                    value={board.name}
                                                     onChange={selectBoard}
-                                                    id={`board - option - ${index} `}
+                                                    id={`board - option - ${board.fqbn} `}
                                                     type="radio"
                                                     name="countries"
                                                     className="h-4 w-5 border-gray-300 focus:ring-2 focus:ring-blue-300 mr-2"
-                                                    aria-labelledby={`board - option - ${index} `}
-                                                    aria-describedby={`board - option - ${index} `}
+                                                    aria-labelledby={`board - option - ${board.fqbn} `}
+                                                    aria-describedby={`board - option - ${board.fqbn} `}
                                                 />
                                                 <label
-                                                    htmlFor={`board - option - ${index} `}
+                                                    htmlFor={`board - option - ${board.fqbn} `}
                                                     className="select-none w-full text-base font-semibold leading-none text-gray-300"
                                                 >
-                                                    {x.name}
+                                                    {board.name}
                                                 </label>
                                             </div>
                                         ))
@@ -242,38 +245,38 @@ function App() {
                                             No boards found
                                         </div>
                                     )}
-                                </fieldset>
+                                </div>
                             </div>
-                        </div>
+                        </fieldset>
                         <div className="flex flex-row items-start gap-4">
-                            <div className="w-1/3 text-right"></div>
+                            <div className="w-1/3 text-right" />
                             <div className="md:w-2/3 pt-1">
                                 <button
+                                    type="submit"
                                     disabled={!state.uploadButtonEnabled}
-                                    className="flex justify-center min-w-[200px] mt-4 font-semibold leading-none text-white py-4 px-10 bg-blue-700 rounded hover:bg-blue-600 focus:ring-2 focus:ring-offset-2 focus:ring-blue-700 focus:outline-none
-                disabled:bg-sky-900 disabled:text-slate-500 disabled:border-blue-300 disabled:shadow-none"
+                                    className="flex justify-center min-w-[200px] mt-4 font-semibold leading-none text-white py-4 px-10 bg-blue-700 rounded hover:bg-blue-600 focus:ring-2 focus:ring-offset-2 focus:ring-blue-700 focus:outline-none                 disabled:bg-sky-900 disabled:text-slate-500 disabled:border-blue-300 disabled:shadow-none"
                                 >
                                     {state.uploading ? (
                                         <>
                                             <svg
-                                                class="inline-block animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                                                className="inline-block animate-spin -ml-1 mr-3 h-5 w-5 text-white"
                                                 xmlns="http://www.w3.org/2000/svg"
                                                 fill="none"
                                                 viewBox="0 0 24 24"
                                             >
                                                 <circle
-                                                    class="opacity-25"
+                                                    className="opacity-25"
                                                     cx="12"
                                                     cy="12"
                                                     r="10"
                                                     stroke="currentColor"
-                                                    stroke-width="4"
-                                                ></circle>
+                                                    strokeWidth="4"
+                                                />
                                                 <path
-                                                    class="opacity-75"
+                                                    className="opacity-75"
                                                     fill="currentColor"
                                                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                                ></path>
+                                                />
                                             </svg>
                                             Uploading...
                                         </>
@@ -285,7 +288,7 @@ function App() {
                         </div>
                     </form>
                     {state.error && (
-                        <p class="text-red-600 container mx-auto">
+                        <p className="text-red-600 container mx-auto">
                             {state.error?.message}
                         </p>
                     )}
@@ -306,7 +309,7 @@ function App() {
     );
 }
 
-const FormField = ({ type = 'text', value, name, onChange }) => {
+function FormField({ type = 'text', value, name, onChange }) {
     return (
         <input
             type={type}
@@ -316,20 +319,16 @@ const FormField = ({ type = 'text', value, name, onChange }) => {
             className="leading-none text-gray-50 p-3 focus:outline  focus:outline-1 focus:outline-blue- mt-4 border-0 bg-gray-800 rounded"
         />
     );
-};
+}
 
-const FormControl = ({
-    type = 'text',
-    value,
-    name,
-    label,
-    tooltip,
-    onChange,
-}) => {
+function FormControl({ type = 'text', value, name, label, tooltip, onChange }) {
     return (
         <div className="flex flex-row items-center gap-4">
             <div className="w-1/3 text-right mt-4">
-                <label className="select-none w-full text-base font-semibold leading-none text-gray-300">
+                <label
+                    htmlFor={name}
+                    className="select-none w-full text-base font-semibold leading-none text-gray-300"
+                >
                     {label || capitalize(name)}
                 </label>
             </div>
@@ -372,6 +371,6 @@ const FormControl = ({
             </div>
         </div>
     );
-};
+}
 
 export default App;

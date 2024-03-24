@@ -26,7 +26,12 @@ module.exports = {
         sourceType: 'module',
     },
     rules: {
-      "import/no-extraneous-dependencies": ["error", {"devDependencies": true}]
-
-    }
+        'react/react-in-jsx-scope': 'off',
+        'react/prop-types': 'off',
+        'no-console': 'off',
+        'import/no-extraneous-dependencies': [
+            'error',
+            { devDependencies: true },
+        ],
+    },
 };
