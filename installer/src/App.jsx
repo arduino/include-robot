@@ -1,6 +1,6 @@
 import { Command } from '@tauri-apps/api/shell';
 import { invoke } from '@tauri-apps/api/tauri';
-import { useEffect, useReducer, useState } from 'react';
+import { useEffect, useReducer, useRef, useState } from 'react';
 import { Tooltip } from 'react-tooltip';
 import capitalize from './utils/capitalize';
 
@@ -16,9 +16,6 @@ const getBoards = async (fqbnList) => {
     ]);
     const output = await command.execute();
     const boardList = JSON.parse(output.stdout);
-    console.log('******** BEGIN: app:34 ********');
-    console.dir(boardList, { depth: null, colors: true });
-    console.log('********   END: app:34 ********');
     return boardList
         .filter((row) =>
             row.matching_boards?.find((o) => fqbnList.includes(o.fqbn))
@@ -37,6 +34,7 @@ function App() {
     const [leftServo, setLeftServo] = useState('3');
     const [rightServo, setRightServo] = useState('4');
 
+    const textAreaRef = useRef(null);
     const initialState = {
         stdout: '', // stdout as provided by the arduino-cli
         code: null, // code as provided by the arduino-cli
@@ -54,6 +52,10 @@ function App() {
     };
 
     useEffect(() => {
+        textAreaRef.current.scrollTop = textAreaRef.current.scrollHeight;
+    }, [state.stdout]);
+
+    useEffect(() => {
         const getVersion = async () => {
             const command = Command.sidecar(
                 '../resources/arduino-cli/arduino-cli',
@@ -65,7 +67,6 @@ function App() {
                 `${versionObject.VersionString} - ${versionObject.Date} `
             );
         };
-
         getVersion().catch(handleError);
     }, []);
 
@@ -102,7 +103,8 @@ function App() {
     const updateName = (ev) => {
         setName(ev.currentTarget.value);
     };
-    const upload = async () => {
+
+    const asyncUpload = async () => {
         dispatch({ type: 'UPLOAD_STARTED' });
         let board;
         let dstPath;
@@ -122,27 +124,36 @@ function App() {
 
         const uploadMsg = `Uploading binary ${dstPath.split(/.*[/|\\]/)[1]} to ${board.port}\n`;
         dispatch({ type: 'APPEND_STDOUT', stdout: uploadMsg });
-        console.log(uploadMsg);
 
         const command = Command.sidecar(
             '../resources/arduino-cli/arduino-cli',
             ['upload', '-v', '-i', dstPath, '-b', board.fqbn, '-p', board.port]
         );
 
-        let output;
         try {
-            output = await command.execute();
-            dispatch({
-                type: 'UPLOAD_COMPLETE',
-                stdout: output.stdout,
-                code: output.code,
+            // output = await command.execute();
+            command.stdout.on('data', (line) => {
+                dispatch({ type: 'APPEND_STDOUT', stdout: line });
             });
+
+            command.on('close', (data) => {
+                if (data.code === 0) {
+                    dispatch({
+                        type: 'UPLOAD_COMPLETE',
+                        code: data.code, // atm code is not used
+                    });
+                } else {
+                    dispatch({
+                        type: 'GENERIC_ERROR',
+                        error: new Error('Error uploading sketch'),
+                    });
+                }
+            });
+
+            const child = await command.spawn();
+            console.log('pid:', child.pid);
         } catch (error) {
             dispatch({ type: 'GENERIC_ERROR', error });
-        } finally {
-            // setStdout(output.stdout)
-            // setUploadButtonEnabled(true)
-            // setUploading(false)
         }
     };
 
@@ -177,7 +188,7 @@ function App() {
                     <form
                         onSubmit={(e) => {
                             e.preventDefault();
-                            upload();
+                            asyncUpload();
                         }}
                     >
                         <FormControl
@@ -293,7 +304,8 @@ function App() {
                         </p>
                     )}
                     <textarea
-                        rows={4}
+                        ref={textAreaRef}
+                        rows={6}
                         value={state.stdout}
                         readOnly
                         disabled

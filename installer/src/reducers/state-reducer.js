@@ -18,7 +18,7 @@ const reducer = (state, action) => {
                 uploadButtonEnabled:
                     state.boards?.length > 0 && state.selectedBoard,
                 error: null,
-                stdout: tail(action.stdout),
+                // stdout: tail(action.stdout),
                 code: action.code,
             };
         case 'UPLOAD_FAILED':
@@ -28,7 +28,7 @@ const reducer = (state, action) => {
                 uploadButtonEnabled:
                     state.boards?.length > 0 && state.selectedBoard,
                 error: action.error,
-                stdout: tail(action.stdout),
+                // stdout: tail(action.stdout),
                 code: action.code,
             };
 
