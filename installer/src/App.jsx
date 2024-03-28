@@ -167,10 +167,17 @@ function App() {
             <div className=" max-w-5xl mx-auto px-6 sm:px-6 lg:px-8 pt-12 mb-12">
                 <div className="bg-gray-900 w-full shadow rounded p-8 sm:p-12">
                     <p className="text-3xl font-bold leading-7 mb-8 text-center text-white select-none">
-                        Myra Robot installer
+                        <img
+                            className="inline-block mr-4"
+                            src="./128x128.png"
+                            alt="Myra Robot logo"
+                            height="48"
+                            width="48"
+                        />
+                        Myra Robot Installer
                     </p>
 
-                    <p className="text-center my-2 text-lg font-bold text-white select-none">
+                    <p className="text-center text-lg font-bold text-white select-none">
                         Install the software you need to interact with Scratch
                         via Bluetooth (BLE) on your Arduino
                     </p>
