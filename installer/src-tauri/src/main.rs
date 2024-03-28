@@ -8,8 +8,6 @@ use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
 
-use tauri::{Manager, PhysicalSize};
-
 use serde::Serialize;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
@@ -64,22 +62,9 @@ fn append_config(
 }
 
 fn main() {
-
     tauri::Builder::default()
-        .setup(|app| {
-            let main_window = app.get_window("main").unwrap();
-            main_window.set_min_size(Some(PhysicalSize{width: 500, height: 400})).unwrap();
-            Ok(())
-        })
         .invoke_handler(tauri::generate_handler![greet])
         .invoke_handler(tauri::generate_handler![append_config])
         .run(tauri::generate_context!())
-        // .setup(|app| {
-        //     let main_window = app.get_window("main").unwrap();
-        //     main_window.set_min_size(Some(PhysicalSize::new(300, 300))).unwrap();
-      
-        //     log::debug!("tauri setup complete");
-        //     Ok(())            
-        // })
         .expect("error while running tauri application");
 }
