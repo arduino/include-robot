@@ -1,34 +1,18 @@
-import { Command } from '@tauri-apps/api/shell';
 import { invoke } from '@tauri-apps/api/tauri';
 import { useEffect, useReducer, useRef, useState } from 'react';
-import { Tooltip } from 'react-tooltip';
-import capitalize from './utils/capitalize';
+import FormControl from './components/FormControl';
+import LoadingButton from './components/LoadingButton';
+import reducer from './reducers/state-reducer';
+import {
+    getBoards,
+    getVersion as getVersionFromCLI,
+    upload,
+} from './services/arduino-cli';
 
 import './App.css';
-import reducer from './reducers/state-reducer';
-
-const getBoards = async (fqbnList) => {
-    const command = Command.sidecar('../resources/arduino-cli/arduino-cli', [
-        'board',
-        'list',
-        '--format',
-        'json',
-    ]);
-    const output = await command.execute();
-    const boardList = JSON.parse(output.stdout);
-    return boardList
-        .filter((row) =>
-            row.matching_boards?.find((o) => fqbnList.includes(o.fqbn))
-        )
-        .map((board) => ({
-            name: board.matching_boards[0]?.name,
-            fqbn: board.matching_boards[0]?.fqbn,
-            port: board.port?.address,
-        }));
-};
 
 function App() {
-    // these properties are not part of the "internal state" of the component
+    // these properties are not part of the "internal state" of the component (preferential)
     const [version, setVersion] = useState('');
     const [name, setName] = useState('');
     const [leftServo, setLeftServo] = useState('3');
@@ -47,47 +31,35 @@ function App() {
 
     const [state, dispatch] = useReducer(reducer, initialState);
 
-    const handleError = (error) => {
-        dispatch({ type: 'GENERIC_ERROR', error });
-    };
+    const handleError = (error) => dispatch({ type: 'GENERIC_ERROR', error });
 
     useEffect(() => {
         textAreaRef.current.scrollTop = textAreaRef.current.scrollHeight;
     }, [state.stdout]);
 
+    /* writes the version of the CLI at mount time */
     useEffect(() => {
-        const getVersion = async () => {
-            const command = Command.sidecar(
-                '../resources/arduino-cli/arduino-cli',
-                ['version', '--format', 'json']
-            );
-            const output = await command.execute();
-            const versionObject = JSON.parse(output.stdout);
-            setVersion(
-                `${versionObject.VersionString} - ${versionObject.Date} `
-            );
+        const writeVersion = async () => {
+            const versionString = await getVersionFromCLI();
+            setVersion(versionString);
         };
-        getVersion().catch(handleError);
+        writeVersion().catch(handleError);
     }, []);
 
     /* Checking if there are connected boards every 3 seconds */
     useEffect(() => {
         const interval = setInterval(async () => {
-            try {
-                const connectedBoards = await getBoards([
-                    'arduino:mbed_nano:nano33ble',
-                ]);
-                if (connectedBoards.length > 0) {
+            getBoards({
+                fqbnList: ['arduino:mbed_nano:nano33ble'],
+                onBoardRetrieved: (connectedBoards) =>
                     dispatch({
                         type: 'BOARDS_RETRIEVED',
                         boards: connectedBoards,
-                    });
-                } else {
-                    dispatch({ type: 'BOARDS_DISCONNECTED' });
-                }
-            } catch (error) {
-                console.error(error);
-            }
+                    }),
+                onBoardDisconnected: () =>
+                    dispatch({ type: 'BOARDS_DISCONNECTED' }),
+                onError: handleError,
+            });
         }, 3000);
 
         return () => clearInterval(interval);
@@ -112,10 +84,12 @@ function App() {
             board = state.boards.find((x) => x.name === state.selectedBoard);
             dstPath = await invoke('append_config', {
                 binPath: '../resources/sketch.bin',
-                ble_name: name,
                 cfg: name, // legacy, remove when msgpack stuff is completed
-                left_servo: leftServo,
-                right_servo: rightServo,
+                config: {
+                    ble_name: name,
+                    left_servo: leftServo,
+                    right_servo: rightServo,
+                },
             });
         } catch (error) {
             handleError(error);
@@ -125,36 +99,31 @@ function App() {
         const uploadMsg = `Uploading binary ${dstPath.split(/.*[/|\\]/)[1]} to ${board.port}\n`;
         dispatch({ type: 'APPEND_STDOUT', stdout: uploadMsg });
 
-        const command = Command.sidecar(
-            '../resources/arduino-cli/arduino-cli',
-            ['upload', '-v', '-i', dstPath, '-b', board.fqbn, '-p', board.port]
-        );
+        const onData = (line) =>
+            dispatch({ type: 'APPEND_STDOUT', stdout: line });
 
-        try {
-            // output = await command.execute();
-            command.stdout.on('data', (line) => {
-                dispatch({ type: 'APPEND_STDOUT', stdout: line });
-            });
+        const onClose = (data) => {
+            if (data.code === 0) {
+                dispatch({
+                    type: 'UPLOAD_COMPLETE',
+                    code: data.code, // atm code is not used
+                });
+            } else {
+                dispatch({
+                    type: 'GENERIC_ERROR',
+                    error: new Error('Error uploading sketch'),
+                });
+            }
+        };
 
-            command.on('close', (data) => {
-                if (data.code === 0) {
-                    dispatch({
-                        type: 'UPLOAD_COMPLETE',
-                        code: data.code, // atm code is not used
-                    });
-                } else {
-                    dispatch({
-                        type: 'GENERIC_ERROR',
-                        error: new Error('Error uploading sketch'),
-                    });
-                }
-            });
-
-            const child = await command.spawn();
-            console.log('pid:', child.pid);
-        } catch (error) {
-            dispatch({ type: 'GENERIC_ERROR', error });
-        }
+        upload({
+            dstPath,
+            fqbn: board.fqbn,
+            port: board.port,
+            onData,
+            onClose,
+            onError: handleError,
+        });
     };
 
     const selectBoard = (ev) => {
@@ -269,39 +238,10 @@ function App() {
                         <div className="flex flex-row items-start gap-4">
                             <div className="w-1/3 text-right" />
                             <div className="md:w-2/3 pt-1">
-                                <button
-                                    type="submit"
-                                    disabled={!state.uploadButtonEnabled}
-                                    className="flex justify-center min-w-[200px] mt-4 font-semibold leading-none text-white py-4 px-10 bg-blue-700 rounded hover:bg-blue-600 focus:ring-2 focus:ring-offset-2 focus:ring-blue-700 focus:outline-none                 disabled:bg-sky-900 disabled:text-slate-500 disabled:border-blue-300 disabled:shadow-none"
-                                >
-                                    {state.uploading ? (
-                                        <>
-                                            <svg
-                                                className="inline-block animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                            >
-                                                <circle
-                                                    className="opacity-25"
-                                                    cx="12"
-                                                    cy="12"
-                                                    r="10"
-                                                    stroke="currentColor"
-                                                    strokeWidth="4"
-                                                />
-                                                <path
-                                                    className="opacity-75"
-                                                    fill="currentColor"
-                                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                                />
-                                            </svg>
-                                            Uploading...
-                                        </>
-                                    ) : (
-                                        'Upload'
-                                    )}
-                                </button>
+                                <LoadingButton
+                                    loading={state.uploading}
+                                    enabled={state.uploadButtonEnabled}
+                                />
                             </div>
                         </div>
                     </form>
@@ -323,70 +263,6 @@ function App() {
                 <div className="w-full text-right text-gray-600 ">
                     Arduino CLI version: {version}
                 </div>
-            </div>
-        </div>
-    );
-}
-
-function FormField({ type = 'text', value, name, onChange }) {
-    return (
-        <input
-            type={type}
-            value={value}
-            name={name}
-            onChange={onChange}
-            className="leading-none text-gray-50 p-3 focus:outline  focus:outline-1 focus:outline-blue- mt-4 border-0 bg-gray-800 rounded"
-        />
-    );
-}
-
-function FormControl({ type = 'text', value, name, label, tooltip, onChange }) {
-    return (
-        <div className="flex flex-row items-center gap-4">
-            <div className="w-1/3 text-right mt-4">
-                <label
-                    htmlFor={name}
-                    className="select-none w-full text-base font-semibold leading-none text-gray-300"
-                >
-                    {label || capitalize(name)}
-                </label>
-            </div>
-            <div className="md:w-2/3 flex flex-row">
-                <FormField
-                    type={type}
-                    value={value}
-                    name={name}
-                    onChange={onChange}
-                />
-                {tooltip && (
-                    <>
-                        <Tooltip
-                            id="my-tooltip"
-                            style={{
-                                backgroundColor:
-                                    'rgb(37 99 235 / var(--tw-bg-opacity))',
-                                color: '#fff',
-                                maxWidth: '480px',
-                            }}
-                        />
-                        <svg
-                            className="h-5 w-5 mt-6 ml-2"
-                            viewBox="0 0 160 160"
-                            data-tooltip-id="my-tooltip"
-                            data-tooltip-content={tooltip}
-                            data-tooltip-place="top"
-                        >
-                            <g fill="white">
-                                <path d="m80 15c-35.88 0-65 29.12-65 65s29.12 65 65 65 65-29.12 65-65-29.12-65-65-65zm0 10c30.36 0 55 24.64 55 55s-24.64 55-55 55-55-24.64-55-55 24.64-55 55-55z" />
-                                <path
-                                    d="m57.373 18.231a9.3834 9.1153 0 1 1 -18.767 0 9.3834 9.1153 0 1 1 18.767 0z"
-                                    transform="matrix(1.1989 0 0 1.2342 21.214 28.75)"
-                                />
-                                <path d="m90.665 110.96c-0.069 2.73 1.211 3.5 4.327 3.82l5.008 0.1v5.12h-39.073v-5.12l5.503-0.1c3.291-0.1 4.082-1.38 4.327-3.82v-30.813c0.035-4.879-6.296-4.113-10.757-3.968v-5.074l30.665-1.105" />
-                            </g>
-                        </svg>
-                    </>
-                )}
             </div>
         </div>
     );
