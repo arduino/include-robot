@@ -10,7 +10,6 @@ init:
 scratch-gui-install:
 	git clone --depth 1 --branch $(scratch-gui-version)  https://github.com/scratchfoundation/scratch-gui.git
 	cd scratch-gui && npm install
-	make scratch-gui-patch
 	
 .PHONY: scratch-gui-patch
 scratch-gui-patch:
