@@ -39,7 +39,7 @@ connect your Scratch project to a BLE device.
 
 - To clone and install the scratch-gui repository (it also applies the patches)
 ```
-make
+make init
 ```
 
 - To apply the patches
