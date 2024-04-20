@@ -20,7 +20,9 @@ scratch-gui-patch:
 .PHONY: scratch-gui-start
 scratch-gui-start:
 	cd scratch-gui && npm start
-
+.PHONY: scratch-gui-watch
+scratch-gui-watch:
+	cd scratch-gui && npm watch
 .PHONY: scratch-gui-clean
 scratch-gui-clean:
 	rm -rf scratch-gui
