@@ -6,7 +6,7 @@
     "distDir": "../dist"
   },
   "package": {
-    "productName": "myra-installer",
+    "productName": "Arduino Myra Robot Installer",
     "version": "0.0.0"
   },
   "tauri": {
@@ -17,6 +17,10 @@
       },
       "os": {
         "all": true
+      },
+      "window": {
+        "setMinSize": true,
+        "setFullscreen": true
       },
       "shell": {
         "sidecar": true,
@@ -39,9 +43,12 @@
     },
     "windows": [
       {
-        "title": "myra-installer",
-        "width": 800,
-        "height": 600
+        "title": "Arduino Myra Robot Installer",
+        "width": 1000,
+        "height": 800,
+        "minWidth": 1000,
+        "minHeight": 800
+  
       }
     ],
     "security": {
