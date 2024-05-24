@@ -15,8 +15,8 @@ function App() {
     // these properties are not part of the "internal state" of the component (preferential)
     const [version, setVersion] = useState('');
     const [name, setName] = useState('');
-    const [leftServo, setLeftServo] = useState('3');
-    const [rightServo, setRightServo] = useState('4');
+    const [leftServo, setLeftServo] = useState(3);
+    const [rightServo, setRightServo] = useState(4);
 
     const textAreaRef = useRef(null);
     const initialState = {
@@ -84,7 +84,6 @@ function App() {
             board = state.boards.find((x) => x.name === state.selectedBoard);
             dstPath = await invoke('append_config', {
                 binPath: '../resources/sketch.bin',
-                cfg: name, // legacy, remove when msgpack stuff is completed
                 config: {
                     ble_name: name,
                     left_servo: leftServo,
