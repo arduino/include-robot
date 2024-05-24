@@ -128,6 +128,7 @@ fn compile_sketch(
             "Arduino_BMI270_BMM150",
             "Servo",
             "ArduinoBLE",
+            "MsgPack",
         ])
         .output()?;
     println!(
