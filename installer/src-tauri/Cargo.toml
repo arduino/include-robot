@@ -17,7 +17,11 @@ bytes = "1.5.0"
 anyhow = "1.0"
 
 [dependencies]
-tauri = { version = "1", features = [ "window-set-min-size", "window-set-fullscreen",
+rmp-serde = "1.1.2"
+thiserror = "1.0.58"
+tauri = { version = "1", features = [
+    "window-set-min-size",
+    "window-set-fullscreen",
     "os-all",
     "path-all",
     "fs-read-file",

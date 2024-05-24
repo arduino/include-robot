@@ -23,18 +23,20 @@
 
 #if defined(ARDUINO_NANO_BLE_SENSE_R2)
 #include <Arduino_APDS9960.h>
+#include <Arduino_BMI270_BMM150.h>
 #include <Arduino_HS300x.h>
 #include <Arduino_LPS22HB.h>
-#include <Arduino_BMI270_BMM150.h>
 #endif
 
 #if defined(ARDUINO_NANO_BLE)
 #include <Arduino_LSM9DS1.h>
 #endif
 
-#include "robot.h"
-#include <Servo.h>
 #include <ArduinoBLE.h>
+#include <MsgPack.h>
+#include <Servo.h>
+
+#include "robot.h"
 
 #define BLE_SENSE_UUID(val) ("6fbe1da7-" val "-44de-92c4-bb6e04fb0212")
 
@@ -43,11 +45,12 @@ const uint8_t HEADER[] = { 0x8a, 0x48, 0x92, 0xdf, 0xaa, 0x69, 0x5c, 0x41 };
 const uint8_t MAGIC = 0x7F;
 const uint32_t MEMORY_SIZE = 0x80000;  // 512KB
 
-// TODO: the pin of the wheels could be obtained during the setup
-const int ROBOT_LEFT_WHEEL = 3;
-const int ROBOT_RIGHT_WHEEL = 4;
+// Config values
+String myname;
+uint8_t rservo = 4;
+uint8_t lservo = 3;
 
-Robot myra = Robot(ROBOT_RIGHT_WHEEL, ROBOT_LEFT_WHEEL);
+Robot myra;
 
 BLEService service(BLE_SENSE_UUID("0000"));
 BLEUnsignedIntCharacteristic versionCharacteristic(BLE_SENSE_UUID("1001"), BLERead);
@@ -57,8 +60,6 @@ BLECharacteristic rgbLedCharacteristic(BLE_SENSE_UUID("6001"), BLEWrite, 3 * siz
 BLECharacteristic pinActionCharacteristic(BLE_SENSE_UUID("6002"), BLERead | BLEWrite, 4 * sizeof(byte));  // Array of 3 bytes, action + pinNumber + data
 BLECharacteristic pinRobotCharacteristic(BLE_SENSE_UUID("6003"), BLEWrite, 3 * sizeof(byte));             // Array of 3 bytes, 1 byte action + 2 bytes for data
 
-// String to calculate the local and device name
-String name;
 
 // delay beafore each sensor getter
 int delayTime = 10;
@@ -180,7 +181,14 @@ void setup() {
   // get binary leading config and interpret as string
   uint8_t cfg[100];
   auto n = get_config_bytes(cfg, 100);
-  String userName(cfg, n);
+
+  if (n != 0) {
+    MsgPack::Unpacker unpacker;
+    unpacker.feed(cfg, n);
+    unpacker.deserialize(myname, rservo, lservo);
+  }
+
+  myra = Robot(rservo, lservo);
 
   if (!BLE.begin()) {
     printSerialMsg("Failed to initialized BLE!");
@@ -196,9 +204,9 @@ void setup() {
   }
   address.toUpperCase();
 
-  name = "BLESense-";
-  if (userName != "") {
-    name += userName;
+  String name("BLESense-");
+  if (myname != "") {
+    name += myname;
   } else {
     name += address[address.length() - 5];
     name += address[address.length() - 4];
