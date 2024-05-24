@@ -112,6 +112,7 @@ fn compile_sketch(
     let output = Command::new(arduino_cli)
         .args(&[
             "compile",
+            "-e",
             "--profile",
             "nano33ble",
             sketch.to_str().unwrap(),
