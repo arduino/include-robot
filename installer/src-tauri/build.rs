@@ -49,8 +49,13 @@ fn main() {
 
     let sketches = base_dir.join("../../sketches/BLE_Scratch/BLE_Scratch.ino");
 
-    compile_sketch(&arduino_cli, &sketches, &resource_dir.join("sketch.bin"))
-        .expect("Failed to compile sketch");
+    compile_sketch(
+        &arduino_cli,
+        &sketches,
+        &resource_dir.join("sketch.bin"),
+        "arduino:mbed_nano:nano33ble",
+    )
+    .expect("Failed to compile sketch");
 
     println!("cargo:rerun-if-changed={}", sketches.to_str().unwrap());
 
@@ -100,6 +105,7 @@ fn compile_sketch(
     arduino_cli: &path::Path,
     sketch: &path::Path,
     to: &path::Path,
+    fqbn: &str,
 ) -> anyhow::Result<()> {
     if to.exists() && fs::metadata(to)?.modified()? >= fs::metadata(sketch)?.modified()? {
         println!("Binary up to date");
@@ -109,12 +115,14 @@ fn compile_sketch(
 
     println!("Compiling sketch '{}'", sketch.to_str().unwrap_or_default());
 
+    let profile = fqbn.rsplit('.').next().unwrap();
+
     let output = Command::new(arduino_cli)
         .args(&[
             "compile",
             "-e",
             "--profile",
-            "nano33ble",
+            profile,
             sketch.to_str().unwrap(),
         ])
         .output()?;
@@ -132,7 +140,7 @@ fn compile_sketch(
     let file = sketch.file_name().unwrap();
     let bin = dir
         .join("build")
-        .join("arduino.mbed_nano.nano33ble")
+        .join(fqbn)
         .join(file)
         .with_extension("ino.bin");
 
