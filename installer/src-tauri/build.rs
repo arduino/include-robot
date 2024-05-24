@@ -110,39 +110,10 @@ fn compile_sketch(
     println!("Compiling sketch '{}'", sketch.to_str().unwrap_or_default());
 
     let output = Command::new(arduino_cli)
-        .args(&["core", "install", "arduino:mbed_nano"])
-        .output()?;
-    println!(
-        "core install output:\n{}\n{}",
-        String::from_utf8_lossy(&output.stderr),
-        String::from_utf8_lossy(&output.stdout),
-    );
-
-    let output = Command::new(arduino_cli)
-        .args(&[
-            "lib",
-            "install",
-            "Arduino_APDS9960",
-            "Arduino_HS300x",
-            "Arduino_LPS22HB",
-            "Arduino_BMI270_BMM150",
-            "Servo",
-            "ArduinoBLE",
-            "MsgPack",
-        ])
-        .output()?;
-    println!(
-        "lib install output:\n{}\n{}",
-        String::from_utf8_lossy(&output.stderr),
-        String::from_utf8_lossy(&output.stdout),
-    );
-
-    let output = Command::new(arduino_cli)
         .args(&[
             "compile",
-            "-b",
-            "arduino:mbed_nano:nano33ble",
-            "-e",
+            "--profile",
+            "nano33ble",
             sketch.to_str().unwrap(),
         ])
         .output()?;
