@@ -115,7 +115,7 @@ fn compile_sketch(
 
     println!("Compiling sketch '{}'", sketch.to_str().unwrap_or_default());
 
-    let profile = fqbn.rsplit('.').next().unwrap();
+    let profile = fqbn.rsplit(':').next().unwrap();
 
     let output = Command::new(arduino_cli)
         .args(&[
@@ -136,11 +136,16 @@ fn compile_sketch(
         return Err(anyhow::anyhow!("Compilation failed"));
     }
 
+    let path_fqbn: String = fqbn
+        .chars()
+        .map(|c| if c == ':' { '.' } else { c })
+        .collect();
+
     let dir = sketch.parent().unwrap();
     let file = sketch.file_name().unwrap();
     let bin = dir
         .join("build")
-        .join(fqbn)
+        .join(path_fqbn)
         .join(file)
         .with_extension("ino.bin");
 
