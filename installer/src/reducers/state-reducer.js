@@ -38,8 +38,9 @@ const reducer = (state, action) => {
                 uploading: false,
                 uploadButtonEnabled:
                     state.boards?.length > 0 && state.selectedBoard,
-                error: action.error,
+                error: new Error(action.error?.toString()),
             };
+
         case 'BOARDS_RETRIEVED':
             return {
                 ...state,

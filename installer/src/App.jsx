@@ -70,10 +70,10 @@ function App() {
     }, []);
 
     const updateLeftServo = (ev) => {
-        setLeftServo(ev.currentTarget.value);
+        setLeftServo(Number(ev.currentTarget.value));
     };
     const updateRightServo = (ev) => {
-        setRightServo(ev.currentTarget.value);
+        setRightServo(Number(ev.currentTarget.value));
     };
 
     const updateName = (ev) => {
@@ -274,7 +274,7 @@ function App() {
                         </div>
                     </form>
                     {state.error && (
-                        <p className="text-red-600 container mx-auto">
+                        <p className="text-red-600 container mx-auto pt-2">
                             {state.error?.message}
                         </p>
                     )}
