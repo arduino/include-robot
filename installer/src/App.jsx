@@ -3,10 +3,12 @@ import { useEffect, useReducer, useRef, useState } from 'react';
 import FormControl from './components/FormControl';
 import LoadingButton from './components/LoadingButton';
 import reducer from './reducers/state-reducer';
+import supportedBoards from './supported-boards';
 import {
     getBoards,
     getVersion as getVersionFromCLI,
     upload,
+    installRequiredCores,
 } from './services/arduino-cli';
 
 import './App.css';
@@ -20,7 +22,7 @@ function App() {
 
     const textAreaRef = useRef(null);
     const initialState = {
-        stdout: '', // stdout as provided by the arduino-cli
+        stdout: '', // stdout (or stderr) as provided by the arduino-cli
         code: null, // code as provided by the arduino-cli
         boards: [],
         selectedBoard: null,
@@ -49,8 +51,10 @@ function App() {
     /* Checking if there are connected boards every 3 seconds */
     useEffect(() => {
         const interval = setInterval(async () => {
-            getBoards({
-                fqbnList: ['arduino:mbed_nano:nano33ble'],
+            await getBoards({
+                fqbnList: supportedBoards.map(
+                    (supportedBoard) => supportedBoard.fqbn
+                ),
                 onBoardRetrieved: (connectedBoards) =>
                     dispatch({
                         type: 'BOARDS_RETRIEVED',
@@ -60,7 +64,7 @@ function App() {
                     dispatch({ type: 'BOARDS_DISCONNECTED' }),
                 onError: handleError,
             });
-        }, 3000);
+        }, 2000);
 
         return () => clearInterval(interval);
     }, []);
@@ -74,6 +78,22 @@ function App() {
 
     const updateName = (ev) => {
         setName(ev.currentTarget.value);
+    };
+
+    const onData = (line) => dispatch({ type: 'APPEND_STDOUT', stdout: line });
+
+    const onUploadFinished = (data) => {
+        if (data.code === 0) {
+            dispatch({
+                type: 'UPLOAD_COMPLETE',
+                code: data.code, // atm code is not used
+            });
+        } else {
+            dispatch({
+                type: 'GENERIC_ERROR',
+                error: new Error('Error uploading sketch'),
+            });
+        }
     };
 
     const asyncUpload = async () => {
@@ -95,34 +115,43 @@ function App() {
             return;
         }
 
+        dispatch({
+            type: 'APPEND_STDOUT',
+            stdout: 'Checking installed Arduino cores',
+        });
+
+        try {
+            await installRequiredCores({
+                // `...new Set()` removes duplicate plaforms
+                fqbnList: [
+                    ...new Set(
+                        supportedBoards.map(
+                            (supportedBoard) => supportedBoard.platform
+                        )
+                    ),
+                ],
+                onData,
+            });
+        } catch (error) {
+            handleError(error);
+            return;
+        }
+
         const uploadMsg = `Uploading binary ${dstPath.split(/.*[/|\\]/)[1]} to ${board.port}\n`;
         dispatch({ type: 'APPEND_STDOUT', stdout: uploadMsg });
 
-        const onData = (line) =>
-            dispatch({ type: 'APPEND_STDOUT', stdout: line });
-
-        const onClose = (data) => {
-            if (data.code === 0) {
-                dispatch({
-                    type: 'UPLOAD_COMPLETE',
-                    code: data.code, // atm code is not used
-                });
-            } else {
-                dispatch({
-                    type: 'GENERIC_ERROR',
-                    error: new Error('Error uploading sketch'),
-                });
-            }
-        };
-
-        upload({
-            dstPath,
-            fqbn: board.fqbn,
-            port: board.port,
-            onData,
-            onClose,
-            onError: handleError,
-        });
+        try {
+            await upload({
+                dstPath,
+                fqbn: board.fqbn,
+                port: board.port,
+                onData,
+                onClose: onUploadFinished,
+                onError: handleError,
+            });
+        } catch (error) {
+            handleError(error);
+        }
     };
 
     const selectBoard = (ev) => {

@@ -48,7 +48,37 @@ const getBoards = ({
     });
 };
 
-const upload = ({ dstPath, fqbn, port, onData, onClose, onError }) => {
+const installRequiredCores = async ({ fqbnList, onData }) => {
+    const promises = [];
+    for (let i = 0; i < fqbnList.length; i += 1) {
+        const installRequiredCoresPromise = new Promise((resolve, reject) => {
+            const fqbn = fqbnList[i];
+            const command = Command.sidecar(
+                '../resources/arduino-cli/arduino-cli',
+                ['core', 'install', fqbn]
+            );
+            try {
+                command.stdout.on('data', onData);
+                command.stderr.on('data', onData);
+                command.on('close', (data) => {
+                    if (data.code !== 0) {
+                        const msg = `Error installing core [${fqbn}] with error [${data.code}]`;
+                        return reject(new Error(msg));
+                    }
+                    return resolve(data);
+                });
+                const child = command.spawn();
+                console.log('pid:', child.pid);
+            } catch (error) {
+                reject(error);
+            }
+        });
+        promises.push(installRequiredCoresPromise);
+    }
+    await Promise.all(promises);
+};
+
+const upload = async ({ dstPath, fqbn, port, onData, onClose, onError }) => {
     const command = Command.sidecar('../resources/arduino-cli/arduino-cli', [
         'upload',
         '-v',
@@ -59,16 +89,15 @@ const upload = ({ dstPath, fqbn, port, onData, onClose, onError }) => {
         '-p',
         port,
     ]);
-
     try {
         command.stdout.on('data', onData);
+        command.stderr.on('data', onData);
         command.on('close', onClose);
-        command.spawn().then((child) => {
-            console.log('pid:', child.pid);
-        });
+        const child = await command.spawn();
+        console.log('pid:', child.pid);
     } catch (error) {
         onError(error);
     }
 };
 
-export { getVersion, getBoards, upload };
+export { getVersion, getBoards, installRequiredCores, upload };
