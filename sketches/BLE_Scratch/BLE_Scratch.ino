@@ -32,13 +32,12 @@
 #include <Arduino_LSM9DS1.h>
 #endif
 
-<<<<<<< HEAD
 #ifdef ARDUINO_NANO_RP2040_CONNECT
 #include <Arduino_LSM6DSOX.h>
 // #include <WiFiNINA.h>
-const int lred = 0; //LEDR.get();
-const int lgreen = 0; //LEDG.get();
-const int lblue = 0; //LEDB.get();
+const int lred = 0;    //LEDR.get();
+const int lgreen = 0;  //LEDG.get();
+const int lblue = 0;   //LEDB.get();
 #else
 const int lred = LEDR;
 const int lgreen = LEDG;
@@ -175,16 +174,14 @@ bool init_sensors() {
 void setup() {
   Serial.begin(9600);
 #ifdef DEBUG
-  while (!Serial)
-    ;
+  while (!Serial);
   Serial.println("Started");
 #endif
 
   auto ok = init_sensors();
 #ifdef SENSOR_CHECKS
   if (!ok) {
-    while (1)
-      ;
+    while (1);
   }
 #endif
 
@@ -203,8 +200,7 @@ void setup() {
   if (!BLE.begin()) {
     printSerialMsg("Failed to initialized BLE!");
 
-    while (1)
-      ;
+    while (1);
   }
 
   String address = BLE.address();
@@ -222,430 +218,430 @@ void setup() {
     name += address[address.length() - 4];
     name += address[address.length() - 2];
     name += address[address.length() - 1];
-  // }
+    // }
 
-  if (Serial) {
-    Serial.print("name = ");
-    Serial.println(name);
+    if (Serial) {
+      Serial.print("name = ");
+      Serial.println(name);
+    }
+
+    BLE.setLocalName(name.c_str());
+    BLE.setDeviceName(name.c_str());
+    BLE.setAdvertisedService(service);
+
+    service.addCharacteristic(versionCharacteristic);
+    service.addCharacteristic(sensorsData);
+    service.addCharacteristic(rgbLedCharacteristic);
+    service.addCharacteristic(pinActionCharacteristic);
+    service.addCharacteristic(pinRobotCharacteristic);
+
+    versionCharacteristic.setValue(VERSION);
+    rgbLedCharacteristic.setEventHandler(BLEWritten, onRgbLedCharacteristicWrite);
+    pinActionCharacteristic.setEventHandler(BLEWritten, onPinActionCharacteristicWrite);
+    pinRobotCharacteristic.setEventHandler(BLEWritten, onRobotActionCharacteristicWrite);
+
+    BLE.addService(service);
+
+    BLE.advertise();
+
+    digitalWrite(LED_BUILTIN, HIGH);
   }
 
-  BLE.setLocalName(name.c_str());
-  BLE.setDeviceName(name.c_str());
-  BLE.setAdvertisedService(service);
+  enum bleNotification {
+    NOTIFY_FIRST_PART = 0,
+    NOTIFY_SECOND_PART = 1,
+  };
 
-  service.addCharacteristic(versionCharacteristic);
-  service.addCharacteristic(sensorsData);
-  service.addCharacteristic(rgbLedCharacteristic);
-  service.addCharacteristic(pinActionCharacteristic);
-  service.addCharacteristic(pinRobotCharacteristic);
+  enum bleNotification notificationState = NOTIFY_FIRST_PART;
 
-  versionCharacteristic.setValue(VERSION);
-  rgbLedCharacteristic.setEventHandler(BLEWritten, onRgbLedCharacteristicWrite);
-  pinActionCharacteristic.setEventHandler(BLEWritten, onPinActionCharacteristicWrite);
-  pinRobotCharacteristic.setEventHandler(BLEWritten, onRobotActionCharacteristicWrite);
+  void loop() {
+    while (BLE.connected()) {
+      if (sensorsData.subscribed()) {
 
-  BLE.addService(service);
+        switch (notificationState) {
+          case NOTIFY_FIRST_PART:
+            sendFirstPartData();
+            notificationState = NOTIFY_SECOND_PART;
+            break;
 
-  BLE.advertise();
+          case NOTIFY_SECOND_PART:
+            sendSecondPartData();
+            notificationState = NOTIFY_FIRST_PART;
+            break;
 
-  digitalWrite(LED_BUILTIN, HIGH);
-}
-
-enum bleNotification {
-  NOTIFY_FIRST_PART = 0,
-  NOTIFY_SECOND_PART = 1,
-};
-
-enum bleNotification notificationState = NOTIFY_FIRST_PART;
-
-void loop() {
-  while (BLE.connected()) {
-    if (sensorsData.subscribed()) {
-
-      switch (notificationState) {
-        case NOTIFY_FIRST_PART:
-          sendFirstPartData();
-          notificationState = NOTIFY_SECOND_PART;
-          break;
-
-        case NOTIFY_SECOND_PART:
-          sendSecondPartData();
-          notificationState = NOTIFY_FIRST_PART;
-          break;
-
-        default:
-          notificationState = NOTIFY_FIRST_PART;
+          default:
+            notificationState = NOTIFY_FIRST_PART;
+        }
       }
     }
   }
-}
 
-void sendFirstPartData() {
-  float temperature = 0,
-        pressure = 0,
-        humidity = 0,
-        magneticFieldX = 0, magneticFieldY = 0, magneticFieldZ = 0,
-        accelerationX = 0, accelerationY = 0, accelerationZ = 0,
-        gyroscopeX = 0, gyroscopeY = 0, gyroscopeZ = 0;
+  void sendFirstPartData() {
+    float temperature = 0,
+          pressure = 0,
+          humidity = 0,
+          magneticFieldX = 0, magneticFieldY = 0, magneticFieldZ = 0,
+          accelerationX = 0, accelerationY = 0, accelerationZ = 0,
+          gyroscopeX = 0, gyroscopeY = 0, gyroscopeZ = 0;
 
 /*
   Temperature
 */
 #if defined(ARDUINO_NANO_BLE_SENSE)
-  temperature = HTS.readTemperature();
-  delay(delayTime);
+    temperature = HTS.readTemperature();
+    delay(delayTime);
 #elif defined(ARDUINO_NANO_BLE_SENSE_R2)
-  temperature = HS300x.readTemperature();
-  delay(delayTime);
+    temperature = HS300x.readTemperature();
+    delay(delayTime);
 #elif defined(ARDUINO_NANO_RP2040_CONNECT)
-  if (IMU.temperatureAvailable()) {
-    int t;
-    IMU.readTemperature(t);
-    temperature = (float)t;
-  }
-  temperature = 42.0;
+    if (IMU.temperatureAvailable()) {
+      int t;
+      IMU.readTemperature(t);
+      temperature = (float)t;
+    }
+    temperature = 42.0;
 #endif
 
 /*
   Pressure
 */
 #if defined(ARDUINO_NANO_BLE_SENSE)
-  pressure = BARO.readPressure();
-  delay(delayTime);
+    pressure = BARO.readPressure();
+    delay(delayTime);
 #elif defined(ARDUINO_NANO_BLE_SENSE_R2)
-  pressure = BARO.readPressure();
-  delay(delayTime);
+    pressure = BARO.readPressure();
+    delay(delayTime);
 #endif
 
-  /*
+    /*
   Humidity
   */
 #if defined(ARDUINO_NANO_BLE_SENSE)
-  humidity = HTS.readHumidity();
-  delay(delayTime);
+    humidity = HTS.readHumidity();
+    delay(delayTime);
 #elif defined(ARDUINO_NANO_BLE_SENSE_R2)
-  humidity = HS300x.readHumidity();
-  delay(delayTime);
+    humidity = HS300x.readHumidity();
+    delay(delayTime);
 #endif
 
-  /*
+    /*
      IMU sensor
   */
 #ifdef ARDUINO_NANO_BLE_SENSE || ARDUINO_NANO_BLE_SENSE_R2 || ARDUINO_NANO_BLE
-  if (IMU.magneticFieldAvailable()) {
-    IMU.readMagneticField(magneticFieldX, magneticFieldY, magneticFieldZ);
-  }
+    if (IMU.magneticFieldAvailable()) {
+      IMU.readMagneticField(magneticFieldX, magneticFieldY, magneticFieldZ);
+    }
 #endif
 
-  if (IMU.accelerationAvailable()) {
-    IMU.readAcceleration(accelerationX, accelerationY, accelerationZ);
+    if (IMU.accelerationAvailable()) {
+      IMU.readAcceleration(accelerationX, accelerationY, accelerationZ);
+    }
+    delay(delayTime);
+    if (IMU.gyroscopeAvailable()) {
+      IMU.readGyroscope(gyroscopeX, gyroscopeY, gyroscopeZ);
+    }
+    delay(delayTime);
+
+    accelerationX = 1;
+    accelerationY = 7;
+    accelerationZ = 7;
+
+    float data[16] = {
+      (float)notificationState,
+      temperature,
+      humidity,
+      pressure,
+
+      accelerationX,
+      accelerationY,
+      accelerationZ,
+
+      gyroscopeX,
+      gyroscopeY,
+      gyroscopeZ,
+
+      magneticFieldX,
+      magneticFieldY,
+      magneticFieldZ,
+      0,
+      0,
+      0
+    };
+
+    sensorsData.writeValue(data, sizeof(data));
+    // wait a bit before reading again
+    delay(delayTime);
   }
-  delay(delayTime);
-  if (IMU.gyroscopeAvailable()) {
-    IMU.readGyroscope(gyroscopeX, gyroscopeY, gyroscopeZ);
-  }
-  delay(delayTime);
 
-accelerationX = 1;
-accelerationY = 7;
-accelerationZ = 7;
+  void sendSecondPartData() {
+    int red = 0, green = 0, blue = 0, ambientLight = 0,
+        proximity = 255,
+        gesture = -1;
 
-  float data[16] = {
-    (float)notificationState,
-    temperature,
-    humidity,
-    pressure,
-
-    accelerationX,
-    accelerationY,
-    accelerationZ,
-
-    gyroscopeX,
-    gyroscopeY,
-    gyroscopeZ,
-
-    magneticFieldX,
-    magneticFieldY,
-    magneticFieldZ,
-    0,
-    0,
-    0
-  };
-
-  sensorsData.writeValue(data, sizeof(data));
-  // wait a bit before reading again
-  delay(delayTime);
-}
-
-void sendSecondPartData() {
-  int red = 0, green = 0, blue = 0, ambientLight = 0,
-      proximity = 255,
-      gesture = -1;
-
-  /*
+    /*
      APDS sensor
   */
 #if defined(ARDUINO_NANO_BLE_SENSE) || defined(ARDUINO_NANO_BLE_SENSE_R2)
-  // check if a color reading is available
-  if (APDS.colorAvailable()) {
-    // read the color
-    APDS.readColor(red, green, blue, ambientLight);
-  }
-  delay(delayTime);
+    // check if a color reading is available
+    if (APDS.colorAvailable()) {
+      // read the color
+      APDS.readColor(red, green, blue, ambientLight);
+    }
+    delay(delayTime);
 
-  // check if a proximity reading is available
-  if (APDS.proximityAvailable()) {
-    proximity = APDS.readProximity();
-  }
-  delay(delayTime);
+    // check if a proximity reading is available
+    if (APDS.proximityAvailable()) {
+      proximity = APDS.readProximity();
+    }
+    delay(delayTime);
 
-  // check if a proximity reading is available
-  if (APDS.gestureAvailable()) {
-    gesture = APDS.readGesture();
-  }
-  delay(delayTime);
+    // check if a proximity reading is available
+    if (APDS.gestureAvailable()) {
+      gesture = APDS.readGesture();
+    }
+    delay(delayTime);
 #endif
 
 
-  float data[16] = {
-    (float)notificationState,
+    float data[16] = {
+      (float)notificationState,
 
-    (float)gesture,
+      (float)gesture,
 
-    (float)red,
-    (float)green,
-    (float)blue,
-    (float)ambientLight,
+      (float)red,
+      (float)green,
+      (float)blue,
+      (float)ambientLight,
 
-    (float)proximity,
+      (float)proximity,
 
-    0,//(float)analogRead(0),
-    0,//(float)analogRead(1),
-    0,//(float)analogRead(2),
-    0,//(float)analogRead(3),
-    0,//(float)analogRead(4),
-    0,//(float)analogRead(5),
-    0,//(float)analogRead(6),
-    0,//(float)analogRead(7),
-    0
+      0,  //(float)analogRead(0),
+      0,  //(float)analogRead(1),
+      0,  //(float)analogRead(2),
+      0,  //(float)analogRead(3),
+      0,  //(float)analogRead(4),
+      0,  //(float)analogRead(5),
+      0,  //(float)analogRead(6),
+      0,  //(float)analogRead(7),
+      0
+    };
+
+    sensorsData.writeValue(data, sizeof(data));
+    // wait a bit before reading again
+    delay(delayTime);
+  }
+
+  enum pinAction {
+    PINMODE = 0,
+    DIGITALWRITE = 1,
+    DIGITALREAD = 2,
+    ANALOGREAD = 3,
+    ANALOGWRITE = 4,
+    SERVOWRITE = 5,
+    SERVOWRITE_AND_INITIALIZE = 6,
+    SERVOSTOP = 7,
   };
 
-  sensorsData.writeValue(data, sizeof(data));
-  // wait a bit before reading again
-  delay(delayTime);
-}
+  static const int SERVO = 0x4;
 
-enum pinAction {
-  PINMODE = 0,
-  DIGITALWRITE = 1,
-  DIGITALREAD = 2,
-  ANALOGREAD = 3,
-  ANALOGWRITE = 4,
-  SERVOWRITE = 5,
-  SERVOWRITE_AND_INITIALIZE = 6,
-  SERVOSTOP = 7,
-};
+  typedef struct WrapServo {
+    Servo s;
+    WrapServo *next = NULL;
+    int pin;
+  };
 
-static const int SERVO = 0x4;
+  WrapServo *root = NULL;
 
-typedef struct WrapServo {
-  Servo s;
-  WrapServo *next = NULL;
-  int pin;
-};
+  void onPinActionCharacteristicWrite(BLEDevice central, BLECharacteristic characteristic) {
+    enum pinAction action = (enum pinAction)pinActionCharacteristic[0];
+    uint8_t pinNumber = pinActionCharacteristic[1];
+    uint8_t pinValue = pinActionCharacteristic[2];
 
-WrapServo *root = NULL;
+    uint8_t response[4] = { 0xFF, pinNumber, 0xFF, 0xFF };
+    uint16_t value;
+    WrapServo *n, *nxt;
 
-void onPinActionCharacteristicWrite(BLEDevice central, BLECharacteristic characteristic) {
-  enum pinAction action = (enum pinAction)pinActionCharacteristic[0];
-  uint8_t pinNumber = pinActionCharacteristic[1];
-  uint8_t pinValue = pinActionCharacteristic[2];
-
-  uint8_t response[4] = { 0xFF, pinNumber, 0xFF, 0xFF };
-  uint16_t value;
-  WrapServo *n, *nxt;
-
-  switch (action) {
-    case PINMODE:
-      if (pinValue == SERVO) {
-        n = new WrapServo();
-        n->s.attach(pinNumber);
-        n->pin = pinNumber;
-        if (root == NULL) {
-          root = n;
-        } else {
-          nxt = root;
-          while (nxt->next != NULL) {
-            nxt = nxt->next;
+    switch (action) {
+      case PINMODE:
+        if (pinValue == SERVO) {
+          n = new WrapServo();
+          n->s.attach(pinNumber);
+          n->pin = pinNumber;
+          if (root == NULL) {
+            root = n;
+          } else {
+            nxt = root;
+            while (nxt->next != NULL) {
+              nxt = nxt->next;
+            }
+            nxt->next = n;
           }
-          nxt->next = n;
+        } else {
+          pinMode(pinNumber, pinValue);
         }
-      } else {
-        pinMode(pinNumber, pinValue);
-      }
-      break;
-    case DIGITALWRITE:
-      digitalWrite(pinNumber, pinValue);
-      break;
-    case DIGITALREAD:
-      response[0] = action;
-      response[2] = digitalRead(pinNumber);
-      break;
-    case ANALOGREAD:
-      response[0] = action;
-      value = analogRead(pinNumber);
-      response[2] = value & 0xFF;
-      response[3] = (value & 0xFF00) >> 8;
-      break;
-    case ANALOGWRITE:
-      analogWrite(pinNumber, pinValue);
-      break;
-    case SERVOWRITE:
-      // find servo
-      n = root;
-      while (n != NULL) {
-        if (n->pin == pinNumber) {
-          break;
+        break;
+      case DIGITALWRITE:
+        digitalWrite(pinNumber, pinValue);
+        break;
+      case DIGITALREAD:
+        response[0] = action;
+        response[2] = digitalRead(pinNumber);
+        break;
+      case ANALOGREAD:
+        response[0] = action;
+        value = analogRead(pinNumber);
+        response[2] = value & 0xFF;
+        response[3] = (value & 0xFF00) >> 8;
+        break;
+      case ANALOGWRITE:
+        analogWrite(pinNumber, pinValue);
+        break;
+      case SERVOWRITE:
+        // find servo
+        n = root;
+        while (n != NULL) {
+          if (n->pin == pinNumber) {
+            break;
+          }
+          n = n->next;
         }
-        n = n->next;
-      }
-      if (n != NULL) {
+        if (n != NULL) {
+          n->s.write(pinValue);
+        }
+        break;
+      case SERVOWRITE_AND_INITIALIZE:
+        // find servo
+        n = root;
+        while (n != NULL) {
+          if (n->pin == pinNumber) {
+            break;
+          }
+          n = n->next;
+        }
+        if (n == NULL) {
+          n = new WrapServo();
+          n->s.attach(pinNumber);
+          n->pin = pinNumber;
+          if (root == NULL) {
+            root = n;
+          } else {
+            nxt = root;
+            while (nxt->next != NULL) {
+              nxt = nxt->next;
+            }
+            nxt->next = n;
+          }
+        }
         n->s.write(pinValue);
-      }
-      break;
-    case SERVOWRITE_AND_INITIALIZE:
-      // find servo
-      n = root;
-      while (n != NULL) {
-        if (n->pin == pinNumber) {
-          break;
-        }
-        n = n->next;
-      }
-      if (n == NULL) {
-        n = new WrapServo();
-        n->s.attach(pinNumber);
-        n->pin = pinNumber;
-        if (root == NULL) {
-          root = n;
-        } else {
-          nxt = root;
-          while (nxt->next != NULL) {
-            nxt = nxt->next;
+        break;
+      case SERVOSTOP:
+        // find servo
+        n = root;
+        WrapServo *prev = NULL;
+        while (n != NULL) {
+          if (n->pin == pinNumber) {
+            break;
           }
-          nxt->next = n;
+          prev = n;
+          n = n->next;
         }
-      }
-      n->s.write(pinValue);
-      break;
-    case SERVOSTOP:
-      // find servo
-      n = root;
-      WrapServo *prev = NULL;
-      while (n != NULL) {
-        if (n->pin == pinNumber) {
+        if (n != NULL) {
+          n->s.detach();
+          pinMode(pinNumber, INPUT);
+
+          if (prev == NULL) {
+            root = n->next;
+          } else {
+            prev->next = n->next;
+          }
+          delete n;
+        }
+        break;
+    }
+    if (response[0] != 0xFF) {
+      response[1] = pinNumber;
+      pinActionCharacteristic.writeValue(response, sizeof(response));
+    }
+  }
+
+  void onRgbLedCharacteristicWrite(BLEDevice central, BLECharacteristic characteristic) {
+    byte r = rgbLedCharacteristic[0];
+    byte g = rgbLedCharacteristic[1];
+    byte b = rgbLedCharacteristic[2];
+
+    setLedPinValue(lred, r);
+    setLedPinValue(lgreen, g);
+    setLedPinValue(lblue, b);
+  }
+
+  void setLedPinValue(int pin, int value) {
+    // RGB LED's are pulled up, so the PWM needs to be inverted
+
+    if (value == 0) {
+      // special hack to clear LED
+      analogWrite(pin, 256);
+    } else {
+      analogWrite(pin, 255 - value);
+    }
+  }
+
+  enum robotAction {
+    MOVE_FORWARD_STEP = 0,
+    MOVE_BACKWARD_STEP = 1,
+    TURN_RIGHT = 2,
+    TURN_LEFT = 3,
+    SET_SPEED = 4,
+    MOVE_FORWARD_TIME = 5,
+    MOVE_BACKWARD_TIME = 6,
+  };
+
+  void onRobotActionCharacteristicWrite(BLEDevice central, BLECharacteristic characteristic) {
+    robotAction action = static_cast<robotAction>(pinRobotCharacteristic[0]);
+    uint8_t arg1 = pinRobotCharacteristic[1];
+    if (Serial) {
+      Serial.print("action=");
+      Serial.println(action);
+      Serial.print("arg1=");
+      Serial.println(arg1);
+    }
+
+    switch (action) {
+      case robotAction::MOVE_FORWARD_STEP:
+        myra.moveForward(arg1, 1000);
+        break;
+      case robotAction::MOVE_BACKWARD_STEP:
+        myra.moveBackward(arg1, 1000);
+        break;
+      case robotAction::TURN_LEFT:
+        {
+          uint16_t arg2 = static_cast<uint16_t>(pinRobotCharacteristic[2]);
+          uint16_t ms = static_cast<uint16_t>(arg1) << 8 | arg2;
+          myra.turnLeft(ms);
           break;
         }
-        prev = n;
-        n = n->next;
-      }
-      if (n != NULL) {
-        n->s.detach();
-        pinMode(pinNumber, INPUT);
-
-        if (prev == NULL) {
-          root = n->next;
-        } else {
-          prev->next = n->next;
+      case robotAction::TURN_RIGHT:
+        {
+          uint16_t arg2 = static_cast<uint16_t>(pinRobotCharacteristic[2]);
+          uint16_t ms = static_cast<uint16_t>(arg1) << 8 | arg2;
+          myra.turnRight(ms);
+          break;
         }
-        delete n;
-      }
-      break;
-  }
-  if (response[0] != 0xFF) {
-    response[1] = pinNumber;
-    pinActionCharacteristic.writeValue(response, sizeof(response));
-  }
-}
-
-void onRgbLedCharacteristicWrite(BLEDevice central, BLECharacteristic characteristic) {
-  byte r = rgbLedCharacteristic[0];
-  byte g = rgbLedCharacteristic[1];
-  byte b = rgbLedCharacteristic[2];
-
-  setLedPinValue(lred, r);
-  setLedPinValue(lgreen, g);
-  setLedPinValue(lblue, b);
-}
-
-void setLedPinValue(int pin, int value) {
-  // RGB LED's are pulled up, so the PWM needs to be inverted
-
-  if (value == 0) {
-    // special hack to clear LED
-    analogWrite(pin, 256);
-  } else {
-    analogWrite(pin, 255 - value);
-  }
-}
-
-enum robotAction {
-  MOVE_FORWARD_STEP = 0,
-  MOVE_BACKWARD_STEP = 1,
-  TURN_RIGHT = 2,
-  TURN_LEFT = 3,
-  SET_SPEED = 4,
-  MOVE_FORWARD_TIME = 5,
-  MOVE_BACKWARD_TIME = 6,
-};
-
-void onRobotActionCharacteristicWrite(BLEDevice central, BLECharacteristic characteristic) {
-  robotAction action = static_cast<robotAction>(pinRobotCharacteristic[0]);
-  uint8_t arg1 = pinRobotCharacteristic[1];
-  if (Serial) {
-    Serial.print("action=");
-    Serial.println(action);
-    Serial.print("arg1=");
-    Serial.println(arg1);
-  }
-
-  switch (action) {
-    case robotAction::MOVE_FORWARD_STEP:
-      myra.moveForward(arg1, 1000);
-      break;
-    case robotAction::MOVE_BACKWARD_STEP:
-      myra.moveBackward(arg1, 1000);
-      break;
-    case robotAction::TURN_LEFT:
-      {
-        uint16_t arg2 = static_cast<uint16_t>(pinRobotCharacteristic[2]);
-        uint16_t ms = static_cast<uint16_t>(arg1) << 8 | arg2;
-        myra.turnLeft(ms);
+      case robotAction::SET_SPEED:
+        myra.setSpeed(arg1);
         break;
-      }
-    case robotAction::TURN_RIGHT:
-      {
-        uint16_t arg2 = static_cast<uint16_t>(pinRobotCharacteristic[2]);
-        uint16_t ms = static_cast<uint16_t>(arg1) << 8 | arg2;
-        myra.turnRight(ms);
-        break;
-      }
-    case robotAction::SET_SPEED:
-      myra.setSpeed(arg1);
-      break;
-    case robotAction::MOVE_FORWARD_TIME:
-      {
-        uint16_t arg2 = static_cast<uint16_t>(pinRobotCharacteristic[2]);
-        uint16_t ms = static_cast<uint16_t>(arg1) << 8 | arg2;
-        myra.moveForward(1, ms);
-        break;
-      }
-    case robotAction::MOVE_BACKWARD_TIME:
-      {
-        uint16_t arg2 = static_cast<uint16_t>(pinRobotCharacteristic[2]);
-        uint16_t ms = static_cast<uint16_t>(arg1) << 8 | arg2;
-        myra.moveBackward(1, ms);
-        break;
-      }
+      case robotAction::MOVE_FORWARD_TIME:
+        {
+          uint16_t arg2 = static_cast<uint16_t>(pinRobotCharacteristic[2]);
+          uint16_t ms = static_cast<uint16_t>(arg1) << 8 | arg2;
+          myra.moveForward(1, ms);
+          break;
+        }
+      case robotAction::MOVE_BACKWARD_TIME:
+        {
+          uint16_t arg2 = static_cast<uint16_t>(pinRobotCharacteristic[2]);
+          uint16_t ms = static_cast<uint16_t>(arg1) << 8 | arg2;
+          myra.moveBackward(1, ms);
+          break;
+        }
+    }
   }
-}
