@@ -42,11 +42,11 @@ compile-all: compile-nano33ble compile-nanorp2040connect
 
 .PHONY: compile-nano33ble
 compile-nano33ble:
-	arduino-cli compile -v -e -b arduino:mbed_nano:nano33ble ${SKETCH_PATH}
+	arduino-cli compile -v -e --profile nano33ble ${SKETCH_PATH}
 
 .PHONY: compile-nanorp2040connect
 compile-nanorp2040connect:
-	arduino-cli compile -v -e -b arduino:mbed_nano:nanorp2040connect ${SKETCH_PATH}
+	arduino-cli compile -v -e --profile nanorp2040connect ${SKETCH_PATH}
 
 .PHONY: upload-nano33ble
 upload-nano33ble:

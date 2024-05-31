@@ -14,3 +14,16 @@ profiles:
       - ArxTypeTraits (0.3.1)
       - ArxContainer (0.6.0)
       - Servo (1.2.1)
+  nanorp2040connect:
+    fqbn: arduino:mbed_nano:nanorp2040connect
+    platforms:
+      - platform: arduino:mbed_nano (4.1.3)
+    libraries:
+      - Arduino_LSM6DSOX (1.1.2)
+      - WiFiNINA (1.8.14)
+      - ArduinoBLE (1.3.6)
+      - MsgPack (0.4.2)
+      - DebugLog (0.8.3)
+      - ArxTypeTraits (0.3.1)
+      - ArxContainer (0.6.0)
+      - Servo (1.2.1)
