@@ -5,7 +5,7 @@ const Cast = require("../../util/cast");
 const Color = require("../../util/color");
 const log = require("../../util/log");
 
-const blockIconURI = require("./blockIconURI");
+const { blockIconURI, arduinoRobotIcon } = require("./blockIconURI");
 const Peripheral = require("./peripheral");
 const { roundToDecimalPlaces } = require("./utils");
 
@@ -97,7 +97,7 @@ class IncludeRobot {
     return {
       id: IncludeRobot.EXTENSION_ID,
       name: IncludeRobot.EXTENSION_NAME,
-      blockIconURI: blockIconURI,
+      blockIconURI: arduinoRobotIcon,
 
       // Core extensions only: override the default extension block colors.
       color1: "#0ca1a6",

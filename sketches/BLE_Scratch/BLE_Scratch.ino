@@ -32,6 +32,7 @@
 #include <Arduino_LSM9DS1.h>
 #endif
 
+<<<<<<< HEAD
 #ifdef ARDUINO_NANO_RP2040_CONNECT
 #include <Arduino_LSM6DSOX.h>
 // #include <WiFiNINA.h>
@@ -45,6 +46,7 @@ const int lblue = LEDB;
 #endif
 
 #include <ArduinoBLE.h>
+#include <MsgPack.h>
 #include <Servo.h>
 
 #include "robot.h"
@@ -56,11 +58,12 @@ const uint8_t HEADER[] = { 0x8a, 0x48, 0x92, 0xdf, 0xaa, 0x69, 0x5c, 0x41 };
 const uint8_t MAGIC = 0x7F;
 const uint32_t MEMORY_SIZE = 0x80000;  // 512KB
 
-// TODO: the pin of the wheels could be obtained during the setup
-const int ROBOT_LEFT_WHEEL = 3;
-const int ROBOT_RIGHT_WHEEL = 4;
+// Config values
+String myname;
+uint8_t rservo = 4;
+uint8_t lservo = 3;
 
-Robot myra = Robot(ROBOT_RIGHT_WHEEL, ROBOT_LEFT_WHEEL);
+Robot myra;
 
 BLEService service(BLE_SENSE_UUID("0000"));
 BLEUnsignedIntCharacteristic versionCharacteristic(BLE_SENSE_UUID("1001"), BLERead);
@@ -70,8 +73,6 @@ BLECharacteristic rgbLedCharacteristic(BLE_SENSE_UUID("6001"), BLEWrite, 3 * siz
 BLECharacteristic pinActionCharacteristic(BLE_SENSE_UUID("6002"), BLERead | BLEWrite, 4 * sizeof(byte));  // Array of 3 bytes, action + pinNumber + data
 BLECharacteristic pinRobotCharacteristic(BLE_SENSE_UUID("6003"), BLEWrite, 3 * sizeof(byte));             // Array of 3 bytes, 1 byte action + 2 bytes for data
 
-// String to calculate the local and device name
-String name;
 
 // delay beafore each sensor getter
 int delayTime = 10;
@@ -188,9 +189,16 @@ void setup() {
 #endif
 
   // get binary leading config and interpret as string
-  // uint8_t cfg[100];
-  // auto n = get_config_bytes(cfg, 100);
-  // String userName(cfg, n);
+  uint8_t cfg[100];
+  auto n = get_config_bytes(cfg, 100);
+
+  if (n != 0) {
+    MsgPack::Unpacker unpacker;
+    unpacker.feed(cfg, n);
+    unpacker.deserialize(myname, rservo, lservo);
+  }
+
+  myra = Robot(rservo, lservo);
 
   if (!BLE.begin()) {
     printSerialMsg("Failed to initialized BLE!");
@@ -206,10 +214,10 @@ void setup() {
   }
   address.toUpperCase();
 
-  name = "BLESense-";
-  // if (userName != "") {
-  //   name += userName;
-  // } else {
+  String name("BLESense-");
+  if (myname != "") {
+    name += myname;
+  } else {
     name += address[address.length() - 5];
     name += address[address.length() - 4];
     name += address[address.length() - 2];
@@ -290,11 +298,11 @@ void sendFirstPartData() {
   temperature = HS300x.readTemperature();
   delay(delayTime);
 #elif defined(ARDUINO_NANO_RP2040_CONNECT)
-//   if (IMU.temperatureAvailable()) {
-//     int t;
-//     IMU.readTemperature(t);
-//     temperature = (float)t;
-//   }
+  if (IMU.temperatureAvailable()) {
+    int t;
+    IMU.readTemperature(t);
+    temperature = (float)t;
+  }
   temperature = 42.0;
 #endif
 
@@ -324,18 +332,19 @@ void sendFirstPartData() {
      IMU sensor
   */
 #ifdef ARDUINO_NANO_BLE_SENSE || ARDUINO_NANO_BLE_SENSE_R2 || ARDUINO_NANO_BLE
-//   if (IMU.magneticFieldAvailable()) {
-//     IMU.readMagneticField(magneticFieldX, magneticFieldY, magneticFieldZ);
-//   }
+  if (IMU.magneticFieldAvailable()) {
+    IMU.readMagneticField(magneticFieldX, magneticFieldY, magneticFieldZ);
+  }
 #endif
-//   if (IMU.accelerationAvailable()) {
-//     IMU.readAcceleration(accelerationX, accelerationY, accelerationZ);
-//   }
-//   delay(delayTime);
-//   if (IMU.gyroscopeAvailable()) {
-//     IMU.readGyroscope(gyroscopeX, gyroscopeY, gyroscopeZ);
-//   }
-//   delay(delayTime);
+
+  if (IMU.accelerationAvailable()) {
+    IMU.readAcceleration(accelerationX, accelerationY, accelerationZ);
+  }
+  delay(delayTime);
+  if (IMU.gyroscopeAvailable()) {
+    IMU.readGyroscope(gyroscopeX, gyroscopeY, gyroscopeZ);
+  }
+  delay(delayTime);
 
 accelerationX = 1;
 accelerationY = 7;
@@ -448,15 +457,10 @@ typedef struct WrapServo {
 WrapServo *root = NULL;
 
 void onPinActionCharacteristicWrite(BLEDevice central, BLECharacteristic characteristic) {
-    Serial.print("receive pin ");
   enum pinAction action = (enum pinAction)pinActionCharacteristic[0];
   uint8_t pinNumber = pinActionCharacteristic[1];
   uint8_t pinValue = pinActionCharacteristic[2];
 
-Serial.print("receive pin ");
-Serial.print(pinValue);
-Serial.print(" ");
-Serial.println(pinNumber);
   uint8_t response[4] = { 0xFF, pinNumber, 0xFF, 0xFF };
   uint16_t value;
   WrapServo *n, *nxt;

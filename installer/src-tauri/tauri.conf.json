@@ -6,36 +6,58 @@
     "distDir": "../dist"
   },
   "package": {
-    "productName": "myra-installer",
+    "productName": "Arduino Myra Robot Installer",
     "version": "0.0.0"
   },
   "tauri": {
     "allowlist": {
       "all": false,
+      "path": {
+        "all": true
+      },
+      "os": {
+        "all": true
+      },
+      "window": {
+        "setMinSize": true,
+        "setFullscreen": true
+      },
       "shell": {
         "sidecar": true,
         "scope": [
-          { 
-            "name": "../resources/arduino-cli/arduino-cli", 
-            "sidecar": true, 
-            "args": true 
+          {
+            "name": "../resources/arduino-cli/arduino-cli",
+            "sidecar": true,
+            "args": true
           }
-        ],      
+        ],
         "all": false,
         "open": true
+      },
+      "fs": {
+        "scope": [
+          "$RESOURCE/sketch.bin"
+        ],
+        "readFile": true
       }
     },
     "windows": [
       {
-        "title": "myra-installer",
-        "width": 800,
-        "height": 600
+        "title": "Arduino Myra Robot Installer",
+        "width": 1000,
+        "height": 800,
+        "minWidth": 1000,
+        "minHeight": 800
+  
       }
     ],
     "security": {
       "csp": null
     },
     "bundle": {
+      "resources": [
+        "../resources/sketch.bin"
+      ],
       "externalBin": [
         "../resources/arduino-cli/arduino-cli"
       ],
