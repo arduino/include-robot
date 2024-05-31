@@ -34,10 +34,10 @@
 
 #ifdef ARDUINO_NANO_RP2040_CONNECT
 #include <Arduino_LSM6DSOX.h>
-// #include <WiFiNINA.h>
-const int lred = 0;    //LEDR.get();
-const int lgreen = 0;  //LEDG.get();
-const int lblue = 0;   //LEDB.get();
+#include <WiFiNINA.h>
+const int lred =   LEDR.get();
+const int lgreen = LEDG.get();
+const int lblue = LEDB.get();
 #else
 const int lred = LEDR;
 const int lgreen = LEDG;
