@@ -55,7 +55,7 @@ const int lblue = LEDB;
 const int VERSION = 0x00000000;
 const uint8_t HEADER[] = { 0x8a, 0x48, 0x92, 0xdf, 0xaa, 0x69, 0x5c, 0x41 };
 const uint8_t MAGIC = 0x7F;
-const uint32_t MEMORY_SIZE = 0x80000;  // 512KB
+const uint32_t MEMORY_SIZE = 0x500000;  // 5MB
 
 // Config values
 String myname;
@@ -107,7 +107,8 @@ uint32_t get_config_bytes(uint8_t *buff, const uint32_t n) {
       return -1;
     }
 
-    for (int i = start; i <= end - size; i++) {
+    for (uint32_t i = start; i <= end - size; i++) {
+      // printValues("i", i);
       if (memcmp(reinterpret_cast<const void *>(i), buff, size) == 0) {
         return i;
       }
@@ -116,10 +117,10 @@ uint32_t get_config_bytes(uint8_t *buff, const uint32_t n) {
     return -1;
   };
 
-  uint32_t addr = 0;
+  uint32_t addr = XIP_BASE;
 
   while (1) {
-    auto found = search_in_mem(addr, MEMORY_SIZE, HEADER, sizeof(HEADER));
+    auto found = search_in_mem(addr, XIP_BASE + MEMORY_SIZE, HEADER, sizeof(HEADER));
     if (found == -1) {
       printMsg("config header not found");
       return 0;
@@ -206,8 +207,8 @@ void setup() {
 
   // get binary leading config and interpret as string
   uint8_t cfg[100];
-  // auto n = get_config_bytes(cfg, 100);
-  auto n = 0;
+  auto n = get_config_bytes(cfg, 100);
+  // auto n = 0;
 
   if (n != 0) {
     MsgPack::Unpacker unpacker;
