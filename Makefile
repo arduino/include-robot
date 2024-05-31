@@ -10,7 +10,7 @@ init:
 scratch-gui-install:
 	git clone --depth 1 --branch $(scratch-gui-version)  https://github.com/scratchfoundation/scratch-gui.git
 	cd scratch-gui && npm install
-	
+
 .PHONY: scratch-gui-patch
 scratch-gui-patch:
 	cd scratch-gui && node ../scratch-arduino-extensions/scripts/patch-gui.js
@@ -19,9 +19,11 @@ scratch-gui-patch:
 .PHONY: scratch-gui-start
 scratch-gui-start:
 	cd scratch-gui && npm start
+
 .PHONY: scratch-gui-watch
 scratch-gui-watch:
-	cd scratch-gui && npm watch
+	cd scratch-gui && npm run watch
+
 .PHONY: scratch-gui-clean
 scratch-gui-clean:
 	rm -rf scratch-gui
