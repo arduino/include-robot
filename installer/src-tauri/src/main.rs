@@ -81,7 +81,7 @@ fn append_config(
     dst.write_all(HEADER)?;
     dst.write_all(MAGIC)?;
     dst.write_all(&config_buf)?;
-    
+
     Ok(dst_path.to_owned())
 }
 
