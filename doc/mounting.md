@@ -20,7 +20,8 @@
 
 The robot can be assembled using a breadboard.
 
-See the following images
-- <img src="/doc/pictures/wiring_breadboard.jpg" width="180" height="150">
-- <img src="/doc/pictures/wiring_schematic.jpg" width="180" height="150">
-- <img src="/doc/pictures/wiring_robot.jpg" width="180" height="150">
+| Type | Image |
+| --- | --- |
+| Breadboard preview | <img src="/doc/pictures/wiring_breadboard.jpg" width="280" height="250">  |
+| Schematic | <img src="/doc/pictures/wiring_schematic.jpg" width="280" height="250"> |
+| Final robot wiring | <img src="/doc/pictures/wiring_robot.jpg" width="280" height="250"> |
