@@ -1,35 +1,47 @@
 // BLE Scratch v3 / Connect BLE Sense boards to Scratch via Bluetooth
 // 2023.03.04 Added support for BLE Sense R2 and STOPSERVO command
 
-
-// Uncomment one of these defines to select which board you are using
-
-//#define ARDUINO_NANO_BLE_SENSE
+// Select the variant of the NANO 33 BLE
+#ifdef ARDUINO_ARDUINO_NANO33BLE
 //#define ARDUINO_NANO_BLE
+//#define ARDUINO_NANO_BLE_SENSE
 #define ARDUINO_NANO_BLE_SENSE_R2
+#endif
 
 // when this is defined the board will print debug messages on serial
-// #define DEBUG
+#define DEBUG
 
 // when this is defined the board fail if a sensor fails to initialize
-// #define SENSOR_CHECKS
+#define SENSOR_CHECKS
 
-#if defined(ARDUINO_NANO_BLE_SENSE)
+#ifdef ARDUINO_NANO_BLE_SENSE
 #include <Arduino_APDS9960.h>
 #include <Arduino_HTS221.h>
 #include <Arduino_LPS22HB.h>
 #include <Arduino_LSM9DS1.h>
 #endif
 
-#if defined(ARDUINO_NANO_BLE_SENSE_R2)
+#ifdef ARDUINO_NANO_BLE_SENSE_R2
 #include <Arduino_APDS9960.h>
 #include <Arduino_BMI270_BMM150.h>
 #include <Arduino_HS300x.h>
 #include <Arduino_LPS22HB.h>
 #endif
 
-#if defined(ARDUINO_NANO_BLE)
+#ifdef ARDUINO_NANO_BLE
 #include <Arduino_LSM9DS1.h>
+#endif
+
+#ifdef ARDUINO_NANO_RP2040_CONNECT
+#include <Arduino_LSM6DSOX.h>
+#include <WiFiNINA.h>
+const int lred = LEDR.get();
+const int lgreen = LEDG.get();
+const int lblue = LEDB.get();
+#else
+const int lred = LEDR;
+const int lgreen = LEDG;
+const int lblue = LEDB;
 #endif
 
 #include <ArduinoBLE.h>
@@ -43,7 +55,7 @@
 const int VERSION = 0x00000000;
 const uint8_t HEADER[] = { 0x8a, 0x48, 0x92, 0xdf, 0xaa, 0x69, 0x5c, 0x41 };
 const uint8_t MAGIC = 0x7F;
-const uint32_t MEMORY_SIZE = 0x80000;  // 512KB
+const uint32_t MEMORY_SIZE = 0x500000;  // 5MB
 
 // Config values
 String myname;
@@ -64,14 +76,29 @@ BLECharacteristic pinRobotCharacteristic(BLE_SENSE_UUID("6003"), BLEWrite, 3 * s
 // delay beafore each sensor getter
 int delayTime = 10;
 
-// Sensor data
-int red = 0, green = 0, blue = 0, ambientLight = 0;
-int proximity = 255;
-
-void printSerialMsg(const char *msg) {
+void printMsg(const char *msg) {
   if (Serial) {
     Serial.println(msg);
   }
+}
+
+template<typename T>
+void printValues(const char* name, T value) {
+    if (Serial) {
+        Serial.print(name);
+        Serial.print("=");
+        Serial.println(value);
+    }
+}
+template<typename T, typename... Args>
+void printValues(const char* name, T value, Args... args) {
+    if (Serial) {
+        Serial.print(name);
+        Serial.print("=");
+        Serial.print(value);
+        Serial.print(" ");
+        printValues(args...);
+    }
 }
 
 uint32_t get_config_bytes(uint8_t *buff, const uint32_t n) {
@@ -80,7 +107,8 @@ uint32_t get_config_bytes(uint8_t *buff, const uint32_t n) {
       return -1;
     }
 
-    for (int i = start; i <= end - size; i++) {
+    for (uint32_t i = start; i <= end - size; i++) {
+      // printValues("i", i);
       if (memcmp(reinterpret_cast<const void *>(i), buff, size) == 0) {
         return i;
       }
@@ -89,19 +117,19 @@ uint32_t get_config_bytes(uint8_t *buff, const uint32_t n) {
     return -1;
   };
 
-  uint32_t addr = 0;
+  uint32_t addr = XIP_BASE;
 
   while (1) {
-    auto found = search_in_mem(addr, MEMORY_SIZE, HEADER, sizeof(HEADER));
+    auto found = search_in_mem(addr, XIP_BASE + MEMORY_SIZE, HEADER, sizeof(HEADER));
     if (found == -1) {
-      printSerialMsg("config header not found");
+      printMsg("config header not found");
       return 0;
     }
-    printSerialMsg("config header founded");
+    printMsg("config header founded");
 
     uint8_t magic = *reinterpret_cast<uint8_t *>(found + sizeof(HEADER));
     if (magic == MAGIC) {
-      printSerialMsg("config magic number founded");
+      printMsg("config magic number founded");
 
       uint8_t size = *reinterpret_cast<uint8_t *>(found + sizeof(HEADER) + 1);
       memcpy(buff, reinterpret_cast<void *>(found + sizeof(HEADER) + 2), min(size, n));
@@ -121,41 +149,41 @@ bool init_sensors() {
 
 #if defined(ARDUINO_NANO_BLE_SENSE)
   if (!APDS.begin()) {
-    printSerialMsg("Failed to initialized APDS!");
+    printMsg("Failed to initialized APDS!");
     ok = false;
   }
 
   if (!HTS.begin()) {
-    printSerialMsg("Failed to initialized HTS!");
+    printMsg("Failed to initialized HTS!");
     ok = false;
   }
 
   if (!BARO.begin()) {
-    printSerialMsg("Failed to initialized BARO!");
+    printMsg("Failed to initialized BARO!");
     ok = false;
   }
 #endif
 
 #if defined(ARDUINO_NANO_BLE_SENSE_R2)
   if (!APDS.begin()) {
-    printSerialMsg("Failed to initialized APDS!");
+    printMsg("Failed to initialized APDS!");
     ok = false;
   }
 
   if (!HS300x.begin()) {
-    printSerialMsg("Failed to initialized HTS!");
+    printMsg("Failed to initialized HTS!");
     ok = false;
   }
 
   if (!BARO.begin()) {
-    printSerialMsg("Failed to initialized BARO!");
+    printMsg("Failed to initialized BARO!");
     ok = false;
   }
 #endif
 
   // All 3 variants have an IMU on it
   if (!IMU.begin()) {
-    printSerialMsg("Failed to initialized IMU!");
+    printMsg("Failed to initialized IMU!");
     ok = false;
   }
 
@@ -164,44 +192,41 @@ bool init_sensors() {
 
 void setup() {
   Serial.begin(9600);
+
 #ifdef DEBUG
-  while (!Serial)
-    ;
-  Serial.println("Started");
+  while (!Serial);
 #endif
+  printMsg("Starting");
 
   auto ok = init_sensors();
 #ifdef SENSOR_CHECKS
   if (!ok) {
-    while (1)
-      ;
+    while (1);
   }
 #endif
 
   // get binary leading config and interpret as string
   uint8_t cfg[100];
   auto n = get_config_bytes(cfg, 100);
+  // auto n = 0;
 
   if (n != 0) {
     MsgPack::Unpacker unpacker;
     unpacker.feed(cfg, n);
     unpacker.deserialize(myname, rservo, lservo);
+    printValues("myname", myname, "rservo", rservo, "lservo", lservo);
   }
 
   myra = Robot(rservo, lservo);
 
   if (!BLE.begin()) {
-    printSerialMsg("Failed to initialized BLE!");
+    printMsg("Failed to initialized BLE!");
 
-    while (1)
-      ;
+    while (1);
   }
 
   String address = BLE.address();
-  if (Serial) {
-    Serial.print("address = ");
-    Serial.println(address);
-  }
+  printValues("address", address);
   address.toUpperCase();
 
   String name("BLESense-");
@@ -213,11 +238,7 @@ void setup() {
     name += address[address.length() - 2];
     name += address[address.length() - 1];
   }
-
-  if (Serial) {
-    Serial.print("name = ");
-    Serial.println(name);
-  }
+  printValues("name", name);
 
   BLE.setLocalName(name.c_str());
   BLE.setDeviceName(name.c_str());
@@ -251,86 +272,82 @@ enum bleNotification notificationState = NOTIFY_FIRST_PART;
 void loop() {
   while (BLE.connected()) {
     if (sensorsData.subscribed()) {
-
       switch (notificationState) {
         case NOTIFY_FIRST_PART:
           sendFirstPartData();
           notificationState = NOTIFY_SECOND_PART;
           break;
-
         case NOTIFY_SECOND_PART:
           sendSecondPartData();
           notificationState = NOTIFY_FIRST_PART;
           break;
-
-        default:
-          notificationState = NOTIFY_FIRST_PART;
       }
     }
   }
 }
 
-
-
 void sendFirstPartData() {
+  float temperature = 0,
+        pressure = 0,
+        humidity = 0,
+        magneticFieldX = 0, magneticFieldY = 0, magneticFieldZ = 0,
+        accelerationX = 0, accelerationY = 0, accelerationZ = 0,
+        gyroscopeX = 0, gyroscopeY = 0, gyroscopeZ = 0;
 
-
+/*
+  Temperature
+*/
 #if defined(ARDUINO_NANO_BLE_SENSE)
-  /*
-     BARO sensor
-  */
-  float pressure = BARO.readPressure();
+  temperature = HTS.readTemperature();
   delay(delayTime);
-
-  /*
-     HTS sensor
-  */
-  float temperature = HTS.readTemperature();
-  delay(delayTime);
-
-  float humidity = HTS.readHumidity();
-  delay(delayTime);
-
 #elif defined(ARDUINO_NANO_BLE_SENSE_R2)
-  /*
-     BARO sensor
-  */
-  float pressure = BARO.readPressure();
+  temperature = HS300x.readTemperature();
   delay(delayTime);
+#elif defined(ARDUINO_NANO_RP2040_CONNECT)
+  if (IMU.temperatureAvailable()) {
+    int t;
+    IMU.readTemperature(t);
+    temperature = (float)t;
+  }
+#endif
+
+/*
+  Pressure
+*/
+#if defined(ARDUINO_NANO_BLE_SENSE)
+  pressure = BARO.readPressure();
+  delay(delayTime);
+#elif defined(ARDUINO_NANO_BLE_SENSE_R2)
+  pressure = BARO.readPressure();
+  delay(delayTime);
+#endif
 
   /*
-     HTS sensor
+  Humidity
   */
-  float temperature = HS300x.readTemperature();
+#if defined(ARDUINO_NANO_BLE_SENSE)
+  humidity = HTS.readHumidity();
   delay(delayTime);
-
-  float humidity = HS300x.readHumidity();
+#elif defined(ARDUINO_NANO_BLE_SENSE_R2)
+  humidity = HS300x.readHumidity();
   delay(delayTime);
-
-#else
-  float pressure = 0;
-  float temperature = 0;
-  float humidity = 0;
 #endif
 
   /*
      IMU sensor
   */
-  float accelerationX = 0, accelerationY = 0, accelerationZ = 0;
+#if defined(ARDUINO_NANO_BLE_SENSE) || defined(ARDUINO_NANO_BLE_SENSE_R2) || defined(ARDUINO_NANO_BLE)
+  if (IMU.magneticFieldAvailable()) {
+    IMU.readMagneticField(magneticFieldX, magneticFieldY, magneticFieldZ);
+  }
+#endif
+
   if (IMU.accelerationAvailable()) {
     IMU.readAcceleration(accelerationX, accelerationY, accelerationZ);
   }
   delay(delayTime);
-
-  float gyroscopeX = 0, gyroscopeY = 0, gyroscopeZ = 0;
   if (IMU.gyroscopeAvailable()) {
     IMU.readGyroscope(gyroscopeX, gyroscopeY, gyroscopeZ);
-  }
-  delay(delayTime);
-
-  float magneticFieldX = 0, magneticFieldY = 0, magneticFieldZ = 0;
-  if (IMU.magneticFieldAvailable()) {
-    IMU.readMagneticField(magneticFieldX, magneticFieldY, magneticFieldZ);
   }
   delay(delayTime);
 
@@ -362,11 +379,15 @@ void sendFirstPartData() {
 }
 
 void sendSecondPartData() {
-  int gesture = -1;
-#if defined(ARDUINO_NANO_BLE_SENSE) || defined(ARDUINO_NANO_BLE_SENSE_R2)
+  int gesture = -1,
+      red = 0, green = 0, blue = 0,
+      ambientLight = 0,
+      proximity = 255;
+
   /*
      APDS sensor
   */
+#if defined(ARDUINO_NANO_BLE_SENSE) || defined(ARDUINO_NANO_BLE_SENSE_R2)
   // check if a color reading is available
   if (APDS.colorAvailable()) {
     // read the color
@@ -380,19 +401,11 @@ void sendSecondPartData() {
   }
   delay(delayTime);
 
-
   // check if a proximity reading is available
   if (APDS.gestureAvailable()) {
     gesture = APDS.readGesture();
   }
   delay(delayTime);
-#else
-  red = 0;
-  green = 0;
-  blue = 0;
-  ambientLight = 0;
-  proximity = 0;
-  gesture = 0;
 #endif
 
 
@@ -408,6 +421,10 @@ void sendSecondPartData() {
 
     (float)proximity,
 
+#if defined(ARDUINO_NANO_RP2040_CONNECT)
+    // TODO: implement analog read
+    0, 0, 0, 0, 0, 0, 0, 0,
+#else 
     (float)analogRead(0),
     (float)analogRead(1),
     (float)analogRead(2),
@@ -416,6 +433,7 @@ void sendSecondPartData() {
     (float)analogRead(5),
     (float)analogRead(6),
     (float)analogRead(7),
+#endif
     0
   };
 
@@ -449,6 +467,8 @@ void onPinActionCharacteristicWrite(BLEDevice central, BLECharacteristic charact
   enum pinAction action = (enum pinAction)pinActionCharacteristic[0];
   uint8_t pinNumber = pinActionCharacteristic[1];
   uint8_t pinValue = pinActionCharacteristic[2];
+
+  printValues("action", action, "pinNumber", pinNumber, "pinValue", pinValue);
 
   uint8_t response[4] = { 0xFF, pinNumber, 0xFF, 0xFF };
   uint16_t value;
@@ -562,9 +582,15 @@ void onRgbLedCharacteristicWrite(BLEDevice central, BLECharacteristic characteri
   byte g = rgbLedCharacteristic[1];
   byte b = rgbLedCharacteristic[2];
 
-  setLedPinValue(LEDR, r);
-  setLedPinValue(LEDG, g);
-  setLedPinValue(LEDB, b);
+  printValues("led_r", r, "led_g", g, "led_b", b);
+
+#ifdef ARDUINO_NANO_RP2040_CONNECT
+  // TODO: implement RGB LED control
+#else
+  setLedPinValue(lred, r);
+  setLedPinValue(lgreen, g);
+  setLedPinValue(lblue, b);
+#endif
 }
 
 void setLedPinValue(int pin, int value) {
@@ -591,12 +617,8 @@ enum robotAction {
 void onRobotActionCharacteristicWrite(BLEDevice central, BLECharacteristic characteristic) {
   robotAction action = static_cast<robotAction>(pinRobotCharacteristic[0]);
   uint8_t arg1 = pinRobotCharacteristic[1];
-  if (Serial) {
-    Serial.print("action=");
-    Serial.println(action);
-    Serial.print("arg1=");
-    Serial.println(arg1);
-  }
+
+  printValues("robot_action", action, "arg1", arg1);
 
   switch (action) {
     case robotAction::MOVE_FORWARD_STEP:

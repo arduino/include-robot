@@ -36,33 +36,28 @@ int proximity = 255;
 */
 void setup() {
   SerialUSB.begin(9600);
-  while (!SerialUSB)
-    ;
+  while (!SerialUSB);
 
 #ifdef BLE_SENSE
   if (!APDS.begin()) {
     sendError("Failled to initialized APDS!");
-    while (1)
-      ;
+    while (1);
   }
 
   if (!HTS.begin()) {
     sendError("Failled to initialized HTS!");
-    while (1)
-      ;
+    while (1);
   }
 
   if (!BARO.begin()) {
     sendError("Failled to initialized BARO!");
-    while (1)
-      ;
+    while (1);
   }
 #endif
 
   if (!IMU.begin()) {
     sendError("Failled to initialized IMU!");
-    while (1)
-      ;
+    while (1);
   }
 }
 
