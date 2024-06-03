@@ -62,6 +62,7 @@ const upload = ({ dstPath, fqbn, port, onData, onClose, onError }) => {
 
     try {
         command.stdout.on('data', onData);
+        command.stderr.on('data', onData);
         command.on('close', onClose);
         command.spawn().then((child) => {
             console.log('pid:', child.pid);

@@ -2,7 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::fmt::Debug;
-use std::fs::{File, OpenOptions};
+use std::fs::{self, File, OpenOptions};
 use std::io;
 use std::io::Write;
 use std::path::Path;
@@ -62,10 +62,13 @@ fn append_config(
         .resolve_resource(bin_path)
         .ok_or(CmdError::Resolve("source path"))?;
 
-    let dst_path = path
+    let cache_dir = path
         .app_cache_dir()
-        .ok_or(CmdError::Resolve("cache dir path"))?
-        .join("sketch.cfg.bin");
+        .ok_or(CmdError::Resolve("cache dir path"))?;
+
+    fs::create_dir_all(&cache_dir)?;
+
+    let dst_path = cache_dir.join("sketch.cfg.bin");
 
     let mut src = File::open(src_path)?;
     let mut dst = OpenOptions::new()
