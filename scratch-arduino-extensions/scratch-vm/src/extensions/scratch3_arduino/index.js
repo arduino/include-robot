@@ -29,7 +29,6 @@ const calcAngelByAxis = (mainAxis, axis1, axis2) => {
   );
 };
 
-
 /**
  * A time interval to wait (in milliseconds) while a block that sends a BLE message is running.
  * @type {number}
@@ -1085,7 +1084,7 @@ class Scratch3Arduino {
   }
 
   _isGestured(direction) {
-    const sensorData =this._device.gestureState;
+    const sensorData = this._device.gestureState;
 
     switch (direction) {
       case SensorDirection.ANY:
@@ -1129,7 +1128,7 @@ class Scratch3Arduino {
   }
 
   _isTilted(direction) {
-    const acceleration =this._device.acceleration;
+    const acceleration = this._device.acceleration;
     if (direction === SensorDirection.ANY) {
       return (
         Math.abs(acceleration.x * 100) >= Scratch3Arduino.TILT_THRESHOLD ||
@@ -1149,7 +1148,7 @@ class Scratch3Arduino {
   }
 
   _getAngelByAcceleration(axis) {
-    const acceleration =this._device.acceleration;
+    const acceleration = this._device.acceleration;
     switch (axis) {
       case SensorAxis.X:
         return calcAngelByAxis(acceleration.y, acceleration.x, acceleration.z);
@@ -1206,7 +1205,7 @@ class Scratch3Arduino {
 
   _isRotated(axis) {
     if (DEVICE.gyroscope.hasOwnProperty(axis)) {
-      const rotationByAxis =this._device.gyroscope[axis];
+      const rotationByAxis = this._device.gyroscope[axis];
       return Math.abs(rotationByAxis) >= Scratch3Arduino.ROTATE_THRESHOLD;
     }
     log.warn(`Unknown axis in _isRotated: ${axis}`);
@@ -1223,7 +1222,7 @@ class Scratch3Arduino {
   setRGBLedColor(args) {
     const rgb = Cast.toRgbColorObject(args.COLOR);
 
-   this._device.setLedColor(rgb);
+    this._device.setLedColor(rgb);
     return new Promise((resolve) => {
       window.setTimeout(() => {
         resolve();
@@ -1412,7 +1411,7 @@ class Scratch3Arduino {
     const pinNumber = Cast.toNumber(args.DIGITAL_PINS);
     const rotation = Cast.toNumber(args.DEGREES_ROTATION);
 
-   this._device.setServoMotor(pinNumber, rotation);
+    this._device.setServoMotor(pinNumber, rotation);
 
     return new Promise((resolve) => {
       window.setTimeout(() => {
@@ -1426,8 +1425,8 @@ class Scratch3Arduino {
     const pinNumber2 = Cast.toNumber(args.DIGITAL_PINS_2);
     const rotation = Cast.toNumber(args.DEGREES_ROTATION);
 
-   this._device.setServoMotor(pinNumber1, rotation);
-   this._device.setServoMotor(pinNumber2, -rotation);
+    this._device.setServoMotor(pinNumber1, rotation);
+    this._device.setServoMotor(pinNumber2, -rotation);
 
     return new Promise((resolve) => {
       window.setTimeout(() => {
