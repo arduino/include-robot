@@ -29,9 +29,6 @@ const calcAngelByAxis = (mainAxis, axis1, axis2) => {
   );
 };
 
-// Scared BLE device amond all extensions
-let DEVICE;
-
 /**
  * A time interval to wait (in milliseconds) while a block that sends a BLE message is running.
  * @type {number}
@@ -88,6 +85,8 @@ class IncludeRobot {
      * @type {Runtime}
      */
     this._runtime = runtime;
+
+    this._device = new Peripheral(this._runtime, IncludeRobot.EXTENSION_ID);
   }
 
   /**
@@ -103,7 +102,7 @@ class IncludeRobot {
       color1: "#0ca1a6",
       color2: "#7fcbcd",
 
-      showStatusButton: false,
+      showStatusButton: true,
 
       blocks: [
         {
@@ -221,41 +220,41 @@ class IncludeRobot {
 
   moveForward(args) {
     let steps = Cast.toNumber(args.STEPS);
-    return DEVICE.moveForward(steps);
+    return this._device.moveForward(steps);
   }
 
   moveBackward(args) {
     let steps = Cast.toNumber(args.STEPS);
-    return DEVICE.moveBackward(steps);
+    return this._device.moveBackward(steps);
   }
 
   moveForwardTime(args) {
     let seconds = Cast.toNumber(args.SECONDS);
     let ms = Math.floor(seconds * 1000);
-    return DEVICE.moveForwardTime(ms);
+    return this._device.moveForwardTime(ms);
   }
 
   moveBackwardTime(args) {
     let seconds = Cast.toNumber(args.SECONDS);
     let ms = Math.floor(seconds * 1000);
-    return DEVICE.moveBackwardTime(ms);
+    return this._device.moveBackwardTime(ms);
   }
 
   turnLeft(args) {
     let seconds = Cast.toNumber(args.SECONDS);
     let ms = Math.floor(seconds * 1000);
-    return DEVICE.turnLeft(ms);
+    return this._device.turnLeft(ms);
   }
 
   turnRight(args) {
     let seconds = Cast.toNumber(args.SECONDS);
     let ms = Math.floor(seconds * 1000);
-    return DEVICE.turnRight(ms);
+    return this._device.turnRight(ms);
   }
 
   setSpeed(args) {
     let speed = Cast.toNumber(args.SPEED);
-    return DEVICE.setSpeed(speed);
+    return this._device.setSpeed(speed);
   }
 }
 
@@ -538,8 +537,7 @@ class Scratch3Arduino {
      */
     this._runtime = runtime;
 
-    // Implement arduino connection
-    DEVICE = new Peripheral(this._runtime, Scratch3Arduino.EXTENSION_ID);
+    this._device = new Peripheral(this._runtime, Scratch3Arduino.EXTENSION_ID);
   }
 
   /**
@@ -1086,7 +1084,7 @@ class Scratch3Arduino {
   }
 
   _isGestured(direction) {
-    const sensorData = DEVICE.gestureState;
+    const sensorData = this._device.gestureState;
 
     switch (direction) {
       case SensorDirection.ANY:
@@ -1130,7 +1128,7 @@ class Scratch3Arduino {
   }
 
   _isTilted(direction) {
-    const acceleration = DEVICE.acceleration;
+    const acceleration = this._device.acceleration;
     if (direction === SensorDirection.ANY) {
       return (
         Math.abs(acceleration.x * 100) >= Scratch3Arduino.TILT_THRESHOLD ||
@@ -1150,7 +1148,7 @@ class Scratch3Arduino {
   }
 
   _getAngelByAcceleration(axis) {
-    const acceleration = DEVICE.acceleration;
+    const acceleration = this._device.acceleration;
     switch (axis) {
       case SensorAxis.X:
         return calcAngelByAxis(acceleration.y, acceleration.x, acceleration.z);
@@ -1207,7 +1205,7 @@ class Scratch3Arduino {
 
   _isRotated(axis) {
     if (DEVICE.gyroscope.hasOwnProperty(axis)) {
-      const rotationByAxis = DEVICE.gyroscope[axis];
+      const rotationByAxis = this._device.gyroscope[axis];
       return Math.abs(rotationByAxis) >= Scratch3Arduino.ROTATE_THRESHOLD;
     }
     log.warn(`Unknown axis in _isRotated: ${axis}`);
@@ -1224,7 +1222,7 @@ class Scratch3Arduino {
   setRGBLedColor(args) {
     const rgb = Cast.toRgbColorObject(args.COLOR);
 
-    DEVICE.setLedColor(rgb);
+    this._device.setLedColor(rgb);
     return new Promise((resolve) => {
       window.setTimeout(() => {
         resolve();
@@ -1246,7 +1244,7 @@ class Scratch3Arduino {
    */
   getTemperature(args) {
     const unit = Cast.toString(args.TEMPERATURE_UNIT);
-    return DEVICE.getTemperature(unit === TemperatureUnits.FAHRENHEIT);
+    return this._device.getTemperature(unit === TemperatureUnits.FAHRENHEIT);
   }
 
   /**
@@ -1256,14 +1254,14 @@ class Scratch3Arduino {
    */
   getPressure(args) {
     const unit = Cast.toString(args.PRESSURE_UNIT);
-    return DEVICE.getPressure(unit === PressureUnits.MILLIBAR);
+    return this._device.getPressure(unit === PressureUnits.MILLIBAR);
   }
 
   /**
    * @return {string} - the color in hex (#ffffff).
    */
   getColorLight() {
-    const color = DEVICE.colorLight;
+    const color = this._device.colorLight;
     return Color.rgbToHex(color);
   }
 
@@ -1271,21 +1269,21 @@ class Scratch3Arduino {
    * @return {number} - the color in RGB.
    */
   getColorR() {
-    const color = DEVICE.colorLight;
+    const color = this._device.colorLight;
     return color.r;
   }
   /**
    * @return {number} - the color in RGB.
    */
   getColorG() {
-    const color = DEVICE.colorLight;
+    const color = this._device.colorLight;
     return color.g;
   }
   /**
    * @return {number} - the color in RGB.
    */
   getColorB() {
-    const color = DEVICE.colorLight;
+    const color = this._device.colorLight;
     return color.b;
   }
 
@@ -1293,21 +1291,21 @@ class Scratch3Arduino {
    * @return {number} - the ambient light value, lx.
    */
   getAmbientLight() {
-    return DEVICE.ambientLight;
+    return this._device.ambientLight;
   }
 
   /**
    * @return {number} - the proximity.
    */
   getProximity() {
-    return DEVICE.proximity;
+    return this._device.proximity;
   }
 
   /**
    * @return {boolean} - true if sensor covered.
    */
   isProximityCovered() {
-    return DEVICE.proximity === 0;
+    return this._device.proximity === 0;
   }
 
   /**
@@ -1322,7 +1320,7 @@ class Scratch3Arduino {
 
     let value = 0;
     if (DEVICE.magneticField.hasOwnProperty(axis)) {
-      const magneticFieldByAxis = DEVICE.magneticField[axis];
+      const magneticFieldByAxis = this._device.magneticField[axis];
       if (unit === MagneticUnits.GAUSS) {
         value = roundToDecimalPlaces(magneticFieldByAxis / 100, 100000);
       } else {
@@ -1345,7 +1343,7 @@ class Scratch3Arduino {
     const axis = Cast.toString(args.SENSOR_3D_AXIS);
 
     if (DEVICE.gyroscope.hasOwnProperty(axis)) {
-      return DEVICE.gyroscope[axis];
+      return this._device.gyroscope[axis];
     }
 
     log.warn(`Unknown axis in getRotation: ${axis}`);
@@ -1361,7 +1359,7 @@ class Scratch3Arduino {
     const axis = Cast.toString(args.SENSOR_3D_AXIS);
 
     if (DEVICE.acceleration.hasOwnProperty(axis)) {
-      return DEVICE.acceleration[axis];
+      return this._device.acceleration[axis];
     }
 
     log.warn(`Unknown axis in getAcceleration: ${axis}`);
@@ -1371,7 +1369,7 @@ class Scratch3Arduino {
   setDigitalPinMode(args) {
     const pinNumber = Cast.toNumber(args.DIGITAL_PINS);
     const pinMode = Cast.toNumber(args.DIGITAL_MODE);
-    DEVICE.setDigitalMode(pinNumber, pinMode);
+    this._device.setDigitalMode(pinNumber, pinMode);
 
     return new Promise((resolve) => {
       window.setTimeout(() => {
@@ -1383,7 +1381,7 @@ class Scratch3Arduino {
   setDigitalPin(args) {
     const pinNumber = Cast.toNumber(args.DIGITAL_PINS);
     const pinLevel = Cast.toNumber(args.DIGITAL_LEVEL);
-    DEVICE.setDigitalValue(pinNumber, pinLevel);
+    this._device.setDigitalValue(pinNumber, pinLevel);
 
     return new Promise((resolve) => {
       window.setTimeout(() => {
@@ -1395,7 +1393,7 @@ class Scratch3Arduino {
   setAnalogPin(args) {
     const pinNumber = Cast.toNumber(args.ANALOG_PINS);
     const pinValue = Cast.toNumber(args.ANALOG_VALUE);
-    DEVICE.setAnalogValue(pinNumber, pinValue);
+    this._device.setAnalogValue(pinNumber, pinValue);
 
     return new Promise((resolve) => {
       window.setTimeout(() => {
@@ -1406,14 +1404,14 @@ class Scratch3Arduino {
 
   getAnalogPin(args) {
     const pinNumber = Cast.toNumber(args.ANALOG_PINS);
-    return DEVICE.getAnalogPinValue(pinNumber);
+    return this._device.getAnalogPinValue(pinNumber);
   }
 
   setServoCommand(args) {
     const pinNumber = Cast.toNumber(args.DIGITAL_PINS);
     const rotation = Cast.toNumber(args.DEGREES_ROTATION);
 
-    DEVICE.setServoMotor(pinNumber, rotation);
+    this._device.setServoMotor(pinNumber, rotation);
 
     return new Promise((resolve) => {
       window.setTimeout(() => {
@@ -1427,8 +1425,8 @@ class Scratch3Arduino {
     const pinNumber2 = Cast.toNumber(args.DIGITAL_PINS_2);
     const rotation = Cast.toNumber(args.DEGREES_ROTATION);
 
-    DEVICE.setServoMotor(pinNumber1, rotation);
-    DEVICE.setServoMotor(pinNumber2, -rotation);
+    this._device.setServoMotor(pinNumber1, rotation);
+    this._device.setServoMotor(pinNumber2, -rotation);
 
     return new Promise((resolve) => {
       window.setTimeout(() => {
@@ -1441,8 +1439,8 @@ class Scratch3Arduino {
     const pinNumber1 = Cast.toNumber(args.DIGITAL_PINS);
     const pinNumber2 = Cast.toNumber(args.DIGITAL_PINS_2);
 
-    DEVICE.stopServoMotor(pinNumber1);
-    DEVICE.stopServoMotor(pinNumber2);
+    this._device.stopServoMotor(pinNumber1);
+    this._device.stopServoMotor(pinNumber2);
 
     return new Promise((resolve) => {
       window.setTimeout(() => {
@@ -1454,7 +1452,7 @@ class Scratch3Arduino {
   setServoStopCommand(args) {
     const pinNumber = Cast.toNumber(args.DIGITAL_PINS);
 
-    DEVICE.stopServoMotor(pinNumber);
+    this._device.stopServoMotor(pinNumber);
 
     return new Promise((resolve) => {
       window.setTimeout(() => {
